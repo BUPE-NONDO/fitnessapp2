@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Auth Test</title>
+</head>
+<body>
+    <h1>Firebase Authentication Test</h1>
+    <div id="status">Loading...</div>
+    <div id="config"></div>
+    <div id="error"></div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGhmmERHqlE_6f2jFAALXiQFrtpy5fims",
+            authDomain: "fitness-app-bupe-staging.firebaseapp.com",
+            projectId: "fitness-app-bupe-staging",
+            storageBucket: "fitness-app-bupe-staging.firebasestorage.app",
+            messagingSenderId: "717122355693",
+            appId: "1:717122355693:web:7b224927c57a2cc10b67e4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('status').textContent = 'Firebase initialized successfully';
+        document.getElementById('config').innerHTML = `
+            <h3>Firebase Config:</h3>
+            <p>Project ID: ${firebaseConfig.projectId}</p>
+            <p>Auth Domain: ${firebaseConfig.authDomain}</p>
+            <p>API Key: ***${firebaseConfig.apiKey.slice(-4)}</p>
+        `;
+
+        // Test authentication
+        async function testAuth() {
+            try {
+                // Generate a unique email for testing
+                const timestamp = Date.now();
+                const testEmail = `test${timestamp}@example.com`;
+                const testPassword = 'password123';
+
+                console.log('Testing authentication with:', testEmail);
+                console.log('Auth object:', auth);
+                console.log('Auth config:', auth.config);
+
+                const userCredential = await createUserWithEmailAndPassword(auth, testEmail, testPassword);
+                console.log('Success! User created:', userCredential.user.uid);
+                document.getElementById('status').textContent = 'Authentication test successful!';
+                document.getElementById('error').innerHTML = `
+                    <h3>Success!</h3>
+                    <p>User ID: ${userCredential.user.uid}</p>
+                    <p>Email: ${userCredential.user.email}</p>
+                `;
+            } catch (error) {
+                console.error('Authentication error:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    customData: error.customData
+                });
+                document.getElementById('error').innerHTML = `
+                    <h3>Error Details:</h3>
+                    <p><strong>Code:</strong> ${error.code}</p>
+                    <p><strong>Message:</strong> ${error.message}</p>
+                    <p><strong>Full Error:</strong> ${JSON.stringify(error, null, 2)}</p>
+                `;
+            }
+        }
+
+        // Run test after a short delay
+        setTimeout(testAuth, 1000);
+    </script>
+</body>
+</html>

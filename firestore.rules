@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser() {
+      return isAuthenticated() &&
+        request.resource.data.keys().hasAll(['email', 'displayName', 'createdAt']) &&
+        request.resource.data.email is string &&
+        request.resource.data.displayName is string &&
+        request.resource.data.createdAt is timestamp;
+    }
+
+    function isValidGoal() {
+      return isAuthenticated() &&
+        request.resource.data.keys().hasAll(['userId', 'title', 'metric', 'target', 'frequency', 'isActive', 'createdAt']) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.title is string &&
+        request.resource.data.metric in ['count', 'duration', 'distance', 'weight'] &&
+        request.resource.data.target is number &&
+        request.resource.data.target > 0 &&
+        request.resource.data.frequency in ['daily', 'weekly', 'monthly'] &&
+        request.resource.data.isActive is bool &&
+        request.resource.data.createdAt is timestamp;
+    }
+
+    function isValidLog() {
+      return isAuthenticated() &&
+        request.resource.data.keys().hasAll(['userId', 'goalId', 'date', 'value', 'createdAt']) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.goalId is string &&
+        request.resource.data.date is timestamp &&
+        request.resource.data.value is number &&
+        request.resource.data.value > 0 &&
+        request.resource.data.createdAt is timestamp;
+    }
+
+    // Users can only access their own user document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser();
+      allow update: if isOwner(userId) && isValidUser();
+      allow delete: if isOwner(userId);
+    }
+
+    // Users can only access their own goals
+    match /goals/{goalId} {
+      allow read: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      allow create: if isValidGoal();
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Users can only access logs for their own goals
+    match /logs/{logId} {
+      allow read: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      allow create: if isValidLog();
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Users can only access their own badges
+    match /badges/{badgeId} {
+      allow read: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Badge definitions are read-only for all authenticated users
+    match /badgeDefinitions/{badgeDefId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admins can write (handled via admin SDK)
+    }
+
+    // System metadata (read-only for authenticated users)
+    match /metadata/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only admins can write
+    }
+  }
+}

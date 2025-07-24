@@ -1,0 +1,81 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or enhancement for the FitnessApp
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature! Please fill out the form below.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      description: Which milestone does this feature belong to?
+      options:
+        - Milestone 1 - Project & Environment Setup
+        - Milestone 2 - Core UI & Auth Flows
+        - Milestone 3 - Goals & Logging Functionality
+        - Milestone 4 - Dashboard & Progress Tracking
+        - Milestone 5 - Testing & Validation
+        - Milestone 6 - CI/CD & Production Deploy
+        - Milestone 7 - Polish, Accessibility & Launch
+        - Future Enhancement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of feature is this?
+      options:
+        - Frontend/UI
+        - Backend/API
+        - Database
+        - Authentication
+        - Testing
+        - DevOps/CI-CD
+        - Documentation
+        - Performance
+        - Accessibility
+        - Security
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: Describe the feature you'd like to see implemented
+      placeholder: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define the specific requirements for this feature
+      placeholder: |
+        - [ ] Requirement 1
+        - [ ] Requirement 2
+        - [ ] Requirement 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Implementation Notes
+      description: Any technical considerations or implementation details
+      placeholder: Technical approach, dependencies, considerations, etc.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples
+      placeholder: Screenshots, mockups, related issues, etc.

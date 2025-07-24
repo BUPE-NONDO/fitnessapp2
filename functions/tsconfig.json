@@ -1,0 +1,30 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "lib",
+    "target": "es2018",
+    "lib": ["es2018"],
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "noEmit": false,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@fitness-app/shared": ["../packages/shared/src"],
+      "@fitness-app/shared/*": ["../packages/shared/src/*"]
+    }
+  },
+  "include": ["src/**/*", "../packages/shared/src/**/*"],
+  "exclude": ["node_modules", "lib"]
+}

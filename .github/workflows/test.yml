@@ -1,0 +1,269 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Run type checking
+      run: |
+        cd apps/web && npm run typecheck
+        
+    - name: Run linting
+      run: |
+        cd apps/web && npm run lint
+        
+    - name: Run unit tests
+      run: |
+        cd apps/web && npm run test:ci
+        
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./apps/web/coverage/coverage-final.json
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  test-components:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Run component tests
+      run: |
+        cd apps/web && npm run test -- src/test/components
+        
+    - name: Run integration tests
+      run: |
+        cd apps/web && npm run test -- src/test/integration
+
+  test-schemas:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Run schema validation tests
+      run: |
+        cd apps/web && npm run test -- src/test/schemas.test.ts
+        
+    - name: Run service tests
+      run: |
+        cd apps/web && npm run test -- src/test/services
+
+  test-utils:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Run utility tests
+      run: |
+        cd apps/web && npm run test -- src/test/utils
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: [test, test-components, test-schemas, test-utils]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Generate coverage report
+      run: |
+        cd apps/web && npm run test:coverage
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./apps/web/coverage
+        flags: unittests
+        name: fitness-app-coverage
+        
+    - name: Comment coverage on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = './apps/web/coverage/coverage-summary.json';
+          
+          if (fs.existsSync(path)) {
+            const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const total = coverage.total;
+            
+            const comment = `## 📊 Test Coverage Report
+            
+            | Metric | Percentage | Status |
+            |--------|------------|--------|
+            | Lines | ${total.lines.pct}% | ${total.lines.pct >= 80 ? '✅' : '❌'} |
+            | Functions | ${total.functions.pct}% | ${total.functions.pct >= 80 ? '✅' : '❌'} |
+            | Branches | ${total.branches.pct}% | ${total.branches.pct >= 80 ? '✅' : '❌'} |
+            | Statements | ${total.statements.pct}% | ${total.statements.pct >= 80 ? '✅' : '❌'} |
+            
+            ${total.lines.pct >= 80 && total.functions.pct >= 80 && total.branches.pct >= 80 && total.statements.pct >= 80 
+              ? '🎉 All coverage thresholds met!' 
+              : '⚠️ Some coverage thresholds not met. Please add more tests.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+
+  test-performance:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Build application
+      run: |
+        cd apps/web && npm run build
+        
+    - name: Run performance tests
+      run: |
+        cd apps/web && npm run test -- --reporter=json --outputFile=test-results.json
+        
+    - name: Check test performance
+      run: |
+        cd apps/web
+        node -e "
+          const results = require('./test-results.json');
+          const slowTests = results.testResults
+            .filter(test => test.duration > 5000)
+            .map(test => ({ name: test.name, duration: test.duration }));
+          
+          if (slowTests.length > 0) {
+            console.log('⚠️ Slow tests detected:');
+            slowTests.forEach(test => {
+              console.log(\`  - \${test.name}: \${test.duration}ms\`);
+            });
+            
+            if (slowTests.some(test => test.duration > 10000)) {
+              console.log('❌ Tests taking longer than 10s detected');
+              process.exit(1);
+            }
+          } else {
+            console.log('✅ All tests completed within acceptable time');
+          }
+        "
+
+  test-matrix:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [18.x, 20.x]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd apps/web && npm ci
+        
+    - name: Run cross-platform tests
+      run: |
+        cd apps/web && npm run test -- --run
+        
+    - name: Test build on ${{ matrix.os }}
+      run: |
+        cd apps/web && npm run build

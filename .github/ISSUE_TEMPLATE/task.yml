@@ -1,0 +1,112 @@
+name: 📋 Task
+description: Create a development task or work item
+title: "[TASK] "
+labels: ["task"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Create a new development task. Use this for specific work items that need to be completed.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      description: Which milestone does this task belong to?
+      options:
+        - Milestone 1 - Project & Environment Setup
+        - Milestone 2 - Core UI & Auth Flows
+        - Milestone 3 - Goals & Logging Functionality
+        - Milestone 4 - Dashboard & Progress Tracking
+        - Milestone 5 - Testing & Validation
+        - Milestone 6 - CI/CD & Production Deploy
+        - Milestone 7 - Polish, Accessibility & Launch
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of task is this?
+      options:
+        - Frontend/UI
+        - Backend/API
+        - Database
+        - Authentication
+        - Testing
+        - DevOps/CI-CD
+        - Documentation
+        - Configuration
+        - Refactoring
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: What's the priority of this task?
+      options:
+        - High - Blocking other work
+        - Medium - Important but not blocking
+        - Low - Nice to have
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: Describe what needs to be done
+      placeholder: Clear description of the work to be completed
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define when this task is considered complete
+      placeholder: |
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+        - [ ] Criteria 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-requirements
+    attributes:
+      label: Technical Requirements
+      description: Technical specifications or requirements
+      placeholder: |
+        - Dependencies
+        - Technical constraints
+        - Performance requirements
+        - Security considerations
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: Checklist for completion
+      placeholder: |
+        - [ ] Code written and tested
+        - [ ] Unit tests added/updated
+        - [ ] Documentation updated
+        - [ ] Code reviewed
+        - [ ] Deployed to staging
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues
+      description: Link to related issues or dependencies
+      placeholder: |
+        - Depends on: #123
+        - Related to: #456
+        - Blocks: #789

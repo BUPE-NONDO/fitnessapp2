@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/BUPE-NONDO/FitnessApp/blob/main/README.md
+    about: Check the documentation for setup and usage instructions
+  - name: 💬 Discussions
+    url: https://github.com/BUPE-NONDO/FitnessApp/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🎯 Project Board
+    url: https://github.com/BUPE-NONDO/FitnessApp/projects
+    about: View the project roadmap and current progress

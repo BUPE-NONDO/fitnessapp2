@@ -1,0 +1,9 @@
+packages:
+  # Apps
+  - 'apps/*'
+  
+  # Packages
+  - 'packages/*'
+  
+  # Firebase Functions
+  - 'functions'

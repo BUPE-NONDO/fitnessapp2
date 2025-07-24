@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "default": "fitness-app-bupe-staging",
+    "staging": "fitness-app-bupe-staging"
+  },
+  "targets": {
+    "fitness-app-bupe-staging": {
+      "hosting": {
+        "staging": [
+          "fitness-app-bupe-staging"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

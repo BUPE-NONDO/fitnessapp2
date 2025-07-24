@@ -1,0 +1,61 @@
+{
+  "name": "fitness-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A modern fitness tracking application built with React, Firebase, and tRPC",
+  "keywords": ["fitness", "tracking", "react", "firebase", "trpc", "typescript"],
+  "author": "BUPE-NONDO",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BUPE-NONDO/FitnessApp.git"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "functions"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "test:coverage": "turbo run test:coverage",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,css,yaml,yml}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "reset": "pnpm clean && pnpm install",
+    "seed:basic": "node scripts/seed-firestore.js",
+    "seed:advanced": "node scripts/seed-advanced.js",
+    "seed:dev": "node scripts/seed-dev.js",
+    "seed:full": "npm run seed:basic && npm run seed:advanced",
+    "db:reset": "node scripts/reset-database.js",
+    "db:reset:confirm": "node scripts/reset-database.js --confirm",
+    "emulators": "firebase emulators:start",
+    "emulators:auth": "firebase emulators:start --only auth",
+    "emulators:firestore": "firebase emulators:start --only firestore",
+    "seed": "turbo run seed",
+    "deploy:staging": "turbo run build && firebase deploy --only hosting:staging",
+    "deploy:prod": "turbo run build && firebase deploy --only hosting:production",
+    "firebase:setup": "firebase use fitness-app-bupe-staging",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@turbo/gen": "^1.12.4",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "turbo": "^1.12.4",
+    "typescript": "^5.4.2"
+  },
+  "packageManager": "pnpm@8.15.4",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

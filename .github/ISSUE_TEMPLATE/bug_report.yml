@@ -1,0 +1,119 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with the FitnessApp
+title: "[BUG] "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the form below to help us understand and fix the issue.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical - App crashes or data loss
+        - High - Major functionality broken
+        - Medium - Feature partially broken
+        - Low - Minor issue or cosmetic
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What area of the app is affected?
+      options:
+        - Authentication
+        - Dashboard
+        - Goals Management
+        - Activity Logging
+        - Progress Tracking
+        - UI/UX
+        - Performance
+        - API/Backend
+        - Database
+        - Deployment
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: A clear description of what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: A clear description of what actually happened
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this bug occur?
+      options:
+        - Local Development
+        - Staging/Preview
+        - Production
+    validations:
+      required: true
+
+  - type: textarea
+    id: browser-info
+    attributes:
+      label: Browser/Device Information
+      description: Browser, version, device, OS, etc.
+      placeholder: |
+        - Browser: Chrome 91.0.4472.124
+        - OS: Windows 10
+        - Device: Desktop
+        - Screen Resolution: 1920x1080
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors
+      description: Any console errors or logs related to this bug
+      placeholder: Paste any relevant console errors or logs here
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Screenshots, videos, or other helpful information
+      placeholder: Add any other context about the problem here
