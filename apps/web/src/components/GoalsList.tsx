@@ -5,6 +5,8 @@ import { GoalCard } from './GoalCard';
 import { GoalForm } from './GoalForm';
 import { achievementService } from '@/services/achievementService';
 import { useUser } from '@/hooks/useUser';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { OnboardingWizard } from './onboarding/OnboardingWizard';
 import Container from './ui/Container';
 import Button from './ui/Button';
 import Card from './ui/Card';
@@ -18,6 +20,14 @@ export function GoalsList() {
 
   const { data: goalsResponse, isLoading, isError } = useGoals();
   const createGoalMutation = useCreateGoal();
+
+  const {
+    shouldShowOnboarding,
+    isOnboardingOpen,
+    setIsOnboardingOpen,
+    completeOnboarding,
+    triggerOnboarding,
+  } = useOnboarding();
 
   // Mock goals data for now since we're using mock tRPC
   const mockGoals: Goal[] = [
@@ -64,6 +74,19 @@ export function GoalsList() {
   const handleCreateGoal = async (goalData: CreateGoal) => {
     try {
       console.log('Creating goal with data:', goalData);
+
+      // Check if this is the user's first goal and should trigger onboarding
+      const isFirstGoal = goals.length === 0;
+
+      if (isFirstGoal && shouldShowOnboarding) {
+        console.log('🎯 First goal creation - triggering onboarding');
+        // Store the goal data temporarily and trigger onboarding
+        sessionStorage.setItem('pendingGoal', JSON.stringify(goalData));
+        setShowForm(false);
+        triggerOnboarding();
+        return;
+      }
+
       const result = await createGoalMutation.mutateAsync(goalData);
       console.log('Goal created successfully:', result);
       setShowForm(false);
@@ -114,6 +137,54 @@ export function GoalsList() {
     setShowForm(false);
     setEditingGoal(null);
   };
+
+  const handleOnboardingComplete = async (onboardingData: any) => {
+    try {
+      console.log('🎉 Onboarding completed, creating pending goal');
+
+      // Complete onboarding first
+      await completeOnboarding(onboardingData);
+
+      // Check if there's a pending goal to create
+      const pendingGoalData = sessionStorage.getItem('pendingGoal');
+      if (pendingGoalData) {
+        const goalData = JSON.parse(pendingGoalData);
+        console.log('Creating pending goal:', goalData);
+
+        // Create the goal that triggered onboarding
+        await createGoalMutation.mutateAsync(goalData);
+
+        // Clear pending goal
+        sessionStorage.removeItem('pendingGoal');
+
+        // Check for achievements
+        if (user) {
+          setTimeout(() => {
+            achievementService.checkForNewAchievements(user.uid);
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to complete onboarding or create goal:', error);
+      alert(`Failed to complete setup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleOnboardingExit = () => {
+    setIsOnboardingOpen(false);
+    // Clear any pending goal
+    sessionStorage.removeItem('pendingGoal');
+  };
+
+  // Show onboarding wizard if triggered
+  if (isOnboardingOpen) {
+    return (
+      <OnboardingWizard
+        onComplete={handleOnboardingComplete}
+        onExit={handleOnboardingExit}
+      />
+    );
+  }
 
   if (showForm) {
     return (

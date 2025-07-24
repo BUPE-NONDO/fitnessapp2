@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup, linkWithPopup } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { AuthService } from '@/services/authService';
 
 interface GoogleSignInButtonProps {
   mode?: 'signin' | 'signup' | 'link';
@@ -22,45 +21,23 @@ export function GoogleSignInButton({
   const handleGoogleAuth = async () => {
     try {
       setLoading(true);
-      
-      const provider = new GoogleAuthProvider();
-      provider.addScope('profile');
-      provider.addScope('email');
-      
-      // Set custom parameters for better UX
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
 
-      let result;
-      
-      if (mode === 'link' && auth.currentUser) {
-        // Link Google account to existing user
-        result = await linkWithPopup(auth.currentUser, provider);
-        console.log('✅ Google account linked successfully');
+      if (mode === 'link') {
+        const currentUser = AuthService.getCurrentUser();
+        if (!currentUser) {
+          throw new Error('No user is currently signed in');
+        }
+        await AuthService.linkGoogleAccount(currentUser);
       } else {
-        // Sign in or sign up with Google
-        result = await signInWithPopup(auth, provider);
-        console.log('✅ Google authentication successful');
+        await AuthService.signInWithGoogle();
       }
 
-      // Get additional user info
-      const user = result.user;
-      
-      console.log('👤 User info:', {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified
-      });
-
       onSuccess?.();
-      
+
     } catch (error: any) {
       console.error('❌ Google authentication error:', error);
-      
-      let errorMessage = 'Failed to authenticate with Google';
+
+      let errorMessage = error.message || 'Failed to authenticate with Google';
       
       switch (error.code) {
         case 'auth/account-exists-with-different-credential':

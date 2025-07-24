@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useHealthCheck, useGoals } from '@/hooks/useTRPC';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { GoalsList } from './GoalsList';
 import { ActivityLogsList } from './ActivityLogsList';
 import { ProgressDashboard } from './ProgressDashboard';
 import { UserProfile } from './UserProfile';
 import { BadgeManager } from './BadgeDisplay';
+import { OnboardingWizard } from './onboarding/OnboardingWizard';
 import Container from './ui/Container';
 import Button from './ui/Button';
 import { cn, getTypography } from '@/styles/design-system';
@@ -14,7 +16,38 @@ export function Dashboard() {
   const { user, logout } = useAuth();
   const healthCheck = useHealthCheck();
   const goals = useGoals();
+  const {
+    isOnboardingRequired,
+    isOnboardingOpen,
+    setIsOnboardingOpen,
+    completeOnboarding,
+    triggerOnboarding,
+  } = useOnboarding();
+
   const [activeTab, setActiveTab] = useState<'overview' | 'goals' | 'logs' | 'badges' | 'profile'>('overview'); // Start with overview tab
+
+  const handleOnboardingComplete = async (onboardingData: any) => {
+    try {
+      await completeOnboarding(onboardingData);
+      console.log('🎉 Onboarding completed from dashboard');
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+    }
+  };
+
+  const handleOnboardingExit = () => {
+    setIsOnboardingOpen(false);
+  };
+
+  // Show onboarding wizard if required or manually triggered
+  if (isOnboardingOpen) {
+    return (
+      <OnboardingWizard
+        onComplete={handleOnboardingComplete}
+        onExit={handleOnboardingExit}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -92,6 +125,31 @@ export function Dashboard() {
       <main className="flex-1">
         <Container className="py-8">
           <div className="space-y-6">
+            {/* Welcome Banner for New Users */}
+            {isOnboardingRequired && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-4xl">👋</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Welcome to FitnessApp!
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1">
+                        Complete your personalized setup to get the most out of your fitness journey.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={triggerOnboarding}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Complete Setup
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'overview' && <ProgressDashboard />}
             {activeTab === 'goals' && <GoalsList />}
             {activeTab === 'logs' && <ActivityLogsList />}

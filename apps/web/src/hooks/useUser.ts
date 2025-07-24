@@ -10,6 +10,28 @@ export interface UserProfile {
   photoURL?: string;
   createdAt: Date;
   updatedAt: Date;
+
+  // Onboarding status
+  onboardingCompleted?: boolean;
+  onboardingData?: {
+    ageRange?: '18-29' | '30-39' | '40-49' | '50+';
+    gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+    bodyType?: 'ectomorph' | 'mesomorph' | 'endomorph';
+    primaryGoal?: 'lose-weight' | 'gain-muscle' | 'tone-body' | 'increase-endurance' | 'improve-flexibility' | 'general-fitness';
+    currentWeight?: number;
+    targetWeight?: number;
+    height?: number;
+    weightUnit?: 'kg' | 'lbs';
+    heightUnit?: 'cm' | 'ft-in';
+    fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+    workoutEnvironment?: 'home' | 'gym' | 'outdoor' | 'mixed';
+    availableTime?: '15-30' | '30-45' | '45-60' | '60+';
+    equipmentAccess?: 'none' | 'basic' | 'full-gym';
+    workoutDaysPerWeek?: number;
+    selectedPlan?: 'basic' | 'premium' | 'elite';
+    completedAt?: Date;
+  };
+
   preferences?: {
     theme?: 'light' | 'dark' | 'system';
     notifications?: boolean;
@@ -90,6 +112,8 @@ export function useUser(): UseUserReturn {
           photoURL: firebaseUser.photoURL || data.photoURL,
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date(),
+          onboardingCompleted: data.onboardingCompleted || false,
+          onboardingData: data.onboardingData || undefined,
           preferences: data.preferences || {},
           stats: data.stats || {
             totalGoals: 0,
@@ -108,6 +132,7 @@ export function useUser(): UseUserReturn {
           photoURL: firebaseUser.photoURL,
           createdAt: new Date(),
           updatedAt: new Date(),
+          onboardingCompleted: false,
           preferences: {
             theme: 'system',
             notifications: true,

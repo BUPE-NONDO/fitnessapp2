@@ -18,6 +18,16 @@ service cloud.firestore {
         request.resource.data.createdAt is timestamp;
     }
 
+    function isValidUserUpdate() {
+      return isAuthenticated() &&
+        request.resource.data.email is string &&
+        request.resource.data.displayName is string &&
+        request.resource.data.updatedAt is timestamp &&
+        // Allow onboarding fields to be optional
+        (!('onboardingCompleted' in request.resource.data) || request.resource.data.onboardingCompleted is bool) &&
+        (!('onboardingData' in request.resource.data) || request.resource.data.onboardingData is map);
+    }
+
     function isValidGoal() {
       return isAuthenticated() &&
         request.resource.data.keys().hasAll(['userId', 'title', 'metric', 'target', 'frequency', 'isActive', 'createdAt']) &&
@@ -46,7 +56,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId);
       allow create: if isOwner(userId) && isValidUser();
-      allow update: if isOwner(userId) && isValidUser();
+      allow update: if isOwner(userId) && isValidUserUpdate();
       allow delete: if isOwner(userId);
     }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOnboardingFlow } from './hooks/useOnboardingFlow';
 import { ProgressIndicator } from './components/ProgressIndicator';
+import { OnboardingProgress } from './OnboardingProgress';
 import { StepNavigation } from './components/StepNavigation';
 
 // Step Components
@@ -37,9 +38,9 @@ export interface OnboardingData {
   // Step 6: Experience & Preferences
   fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
   workoutEnvironment?: 'home' | 'gym' | 'outdoor' | 'mixed';
-  availableTime?: 15 | 30 | 45 | 60;
-  equipmentAccess?: 'bodyweight' | 'basic' | 'full-gym';
-  workoutDaysPerWeek?: 3 | 4 | 5 | 6 | 7;
+  availableTime?: '15-30' | '30-45' | '45-60' | '60+';
+  equipmentAccess?: 'none' | 'basic' | 'full-gym';
+  workoutDaysPerWeek?: number;
   
   // Step 7: Generated Plan Data
   personalizedPlan?: {
@@ -180,19 +181,30 @@ export function OnboardingWizard({
               </h1>
             </div>
             
-            <ProgressIndicator 
-              currentStep={currentStep + 1} 
+            <OnboardingProgress
+              currentStep={currentStep + 1}
               totalSteps={TOTAL_STEPS}
+              stepTitles={[
+                'Welcome',
+                'Age',
+                'Profile',
+                'Goals',
+                'Metrics',
+                'Preferences',
+                'Preview',
+                'Summary',
+                'Plan',
+                'Complete'
+              ]}
               className="hidden sm:block"
             />
           </div>
-          
+
           {/* Mobile Progress Bar */}
           <div className="mt-3 sm:hidden">
-            <ProgressIndicator 
-              currentStep={currentStep + 1} 
+            <OnboardingProgress
+              currentStep={currentStep + 1}
               totalSteps={TOTAL_STEPS}
-              variant="bar"
             />
           </div>
         </div>
