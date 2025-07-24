@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -10,7 +11,7 @@ export function LoginForm({ onToggleMode, isSignUp }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const { signIn, signUp, loading, error, clearError } = useAuth();
+  const { signIn, signUp, signInWithGoogle, loading, error, clearError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +111,35 @@ export function LoginForm({ onToggleMode, isSignUp }: LoginFormProps) {
           )}
         </button>
       </form>
+
+      {/* Social Authentication Divider */}
+      <div className="mt-6 mb-6">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Google Sign-In Button */}
+      <div className="mb-6">
+        <GoogleSignInButton
+          mode={isSignUp ? 'signup' : 'signin'}
+          onSuccess={() => {
+            // Success is handled by the auth state change
+            console.log('Google authentication successful');
+          }}
+          onError={(error) => {
+            clearError();
+            // The error will be set by the useAuth hook
+            console.error('Google authentication error:', error);
+          }}
+          disabled={loading}
+        />
+      </div>
 
       <div className="mt-6 text-center">
         <p className="text-gray-600">
