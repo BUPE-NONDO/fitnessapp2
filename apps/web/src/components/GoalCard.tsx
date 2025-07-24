@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Goal } from '@fitness-app/shared';
 import { GoalDetails } from './GoalDetails';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import Badge from './ui/Badge';
+import { cn, getTypography } from '@/styles/design-system';
 
 interface GoalCardProps {
   goal: Goal;
@@ -30,83 +34,117 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
     }
   };
 
+  const getStatusVariant = (isActive: boolean): 'success' | 'neutral' => {
+    return isActive ? 'success' : 'neutral';
+  };
+
+  const getProgressVariant = (progress: number): 'success' | 'primary' | 'warning' | 'error' => {
+    if (progress >= 100) return 'success';
+    if (progress >= 75) return 'primary';
+    if (progress >= 50) return 'warning';
+    return 'error';
+  };
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 100) return 'bg-green-500';
+    if (progress >= 75) return 'bg-blue-500';
+    if (progress >= 50) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   // Mock progress calculation for now
   const progress = Math.floor(Math.random() * 100);
-  const progressColor = progress >= 75 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : progress >= 25 ? 'bg-yellow-500' : 'bg-red-500';
 
   return (
     <>
-      <div className="card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowDetails(true)}>
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {goal.title}
-            </h3>
-          {goal.description && (
-            <p className="text-gray-600 text-sm mb-2">
-              {goal.description}
-            </p>
-          )}
-          <div className="text-sm text-gray-500">
-            Target: {goal.target} {getMetricLabel(goal.metric)} {getFrequencyLabel(goal.frequency)}
+      <Card variant="interactive" onClick={() => setShowDetails(true)}>
+        <Card.Header>
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <Card.Title className={getTypography('h4')}>
+                {goal.title}
+              </Card.Title>
+              {goal.description && (
+                <p className={cn(getTypography('body'), 'mt-1')}>
+                  {goal.description}
+                </p>
+              )}
+              <div className={cn(getTypography('caption'), 'mt-2')}>
+                Target: {goal.target} {getMetricLabel(goal.metric)} {getFrequencyLabel(goal.frequency)}
+              </div>
+            </div>
+            <Badge variant={getStatusVariant(goal.isActive)}>
+              {goal.isActive ? 'Active' : 'Inactive'}
+            </Badge>
           </div>
-        </div>
-        
-        <div className="flex space-x-2 ml-4">
-          {onEdit && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(goal);
-              }}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              Edit
-            </button>
-          )}
-          {onDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(goal.id);
-              }}
-              className="text-red-600 hover:text-red-700 text-sm font-medium"
-            >
-              Delete
-            </button>
-          )}
-        </div>
-      </div>
+        </Card.Header>
 
-      {/* Progress Bar */}
-      <div className="mb-3">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium text-gray-700">Progress</span>
-          <span className="text-sm text-gray-600">{progress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-300 ${progressColor}`}
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div>
+        <Card.Content>
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className={cn(getTypography('label'), 'text-sm')}>Progress</span>
+              <Badge variant={getProgressVariant(progress)} size="sm">
+                {progress}%
+              </Badge>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className={cn(
+                  'h-2 rounded-full transition-all duration-300',
+                  getProgressColor(progress)
+                )}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </Card.Content>
 
-      {/* Status Badge */}
-      <div className="flex justify-between items-center">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          goal.isActive 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {goal.isActive ? 'Active' : 'Inactive'}
-        </span>
-        
-        <div className="text-xs text-gray-500">
-          Created: {new Date(goal.createdAt).toLocaleDateString()}
-        </div>
-      </div>
-      </div>
+        <Card.Footer>
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-2">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(goal);
+                  }}
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  }
+                >
+                  Edit
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(goal.id);
+                  }}
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  }
+                >
+                  Delete
+                </Button>
+              )}
+            </div>
+
+            <div className={cn(getTypography('caption'), 'text-xs')}>
+              Created: {new Date(goal.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+        </Card.Footer>
+      </Card>
 
       {/* Goal Details Modal */}
       {showDetails && (

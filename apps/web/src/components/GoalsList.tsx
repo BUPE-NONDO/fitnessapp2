@@ -5,6 +5,11 @@ import { GoalCard } from './GoalCard';
 import { GoalForm } from './GoalForm';
 import { achievementService } from '@/services/achievementService';
 import { useUser } from '@/hooks/useUser';
+import Container from './ui/Container';
+import Button from './ui/Button';
+import Card from './ui/Card';
+import Grid from './ui/Grid';
+import { cn, getTypography } from '@/styles/design-system';
 
 export function GoalsList() {
   const [showForm, setShowForm] = useState(false);
