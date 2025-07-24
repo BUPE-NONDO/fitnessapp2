@@ -15,6 +15,7 @@ export function GoalForm({ goal, onSubmit, onCancel, isLoading }: GoalFormProps)
     metric: goal?.metric || 'count',
     target: goal?.target || 1,
     frequency: goal?.frequency || 'daily',
+    isActive: goal?.isActive ?? true,
   });
 
   const [errors, setErrors] = useState<Partial<CreateGoal>>({});

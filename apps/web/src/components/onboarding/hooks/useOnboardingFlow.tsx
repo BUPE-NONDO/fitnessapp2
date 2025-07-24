@@ -243,15 +243,16 @@ function getWorkoutTypes(goal?: string, level?: string) {
 function createWeeklySchedule(daysPerWeek: number, workoutTypes: string[], duration: number) {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const schedule = [];
-  
+
   for (let i = 0; i < daysPerWeek; i++) {
+    const intensityOptions: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'low'];
     schedule.push({
       day: days[i],
       workoutType: workoutTypes[i % workoutTypes.length],
       duration,
-      intensity: i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low',
+      intensity: intensityOptions[i % 3],
     });
   }
-  
+
   return schedule;
 }
