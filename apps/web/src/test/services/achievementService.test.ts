@@ -46,10 +46,10 @@ describe('AchievementService', () => {
         }),
       ];
 
-      // Mock the private methods by spying on the service
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      // Mock the public methods directly
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue(logs);
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -79,9 +79,9 @@ describe('AchievementService', () => {
         })
       );
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue(logs);
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -98,9 +98,9 @@ describe('AchievementService', () => {
     it('should detect first goal achievement', async () => {
       const goal = createMockGoal({ id: 'goal-1' });
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]); // Only one goal
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue([]);
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -117,9 +117,9 @@ describe('AchievementService', () => {
       const goal = createMockGoal({ id: 'goal-1' });
       const log = createMockLog({ goalId: 'goal-1' });
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue([log]); // Only one log
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -144,9 +144,9 @@ describe('AchievementService', () => {
         })
       );
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue(logs);
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -170,9 +170,9 @@ describe('AchievementService', () => {
         value: 20, // 200% of target (>150%)
       });
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue([log]);
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -197,9 +197,9 @@ describe('AchievementService', () => {
         value: 15,
       });
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue([log]);
 
       // First call
@@ -216,7 +216,7 @@ describe('AchievementService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockRejectedValue(new Error('Database error'));
 
       const achievements = await achievementService.checkForNewAchievements('test-user');
@@ -244,9 +244,9 @@ describe('AchievementService', () => {
       const goal = createMockGoal({ id: 'goal-1' });
       const log = createMockLog({ goalId: 'goal-1' });
 
-      const getUserGoalsSpy = vi.spyOn(achievementService as any, 'getUserGoals')
+      const getUserGoalsSpy = vi.spyOn(achievementService, 'getUserGoals')
         .mockResolvedValue([goal]);
-      const getUserLogsSpy = vi.spyOn(achievementService as any, 'getUserLogs')
+      const getUserLogsSpy = vi.spyOn(achievementService, 'getUserLogs')
         .mockResolvedValue([log]);
 
       // Get achievements first time

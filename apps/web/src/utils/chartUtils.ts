@@ -288,11 +288,13 @@ export function formatChartValue(value: number, metric: string): string {
   switch (metric) {
     case 'duration':
       if (value >= 60) {
-        return `${Math.round(value / 60)}h ${Math.round(value % 60)}m`;
+        const hours = Math.floor(value / 60);
+        const minutes = value % 60;
+        return `${hours}h ${minutes}m`;
       }
       return `${Math.round(value)}m`;
     case 'distance':
-      if (value >= 1000) {
+      if (value >= 500) {
         return `${(value / 1000).toFixed(1)}km`;
       }
       return `${Math.round(value)}m`;

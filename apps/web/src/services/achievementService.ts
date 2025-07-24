@@ -301,7 +301,7 @@ class AchievementService {
     return logs.filter(log => log.date >= startOfMonth);
   }
 
-  private async getUserGoals(userId: string): Promise<any[]> {
+  public async getUserGoals(userId: string): Promise<any[]> {
     try {
       const q = query(collection(db, 'goals'), where('userId', '==', userId));
       const snapshot = await getDocs(q);
@@ -312,7 +312,7 @@ class AchievementService {
     }
   }
 
-  private async getUserLogs(userId: string): Promise<any[]> {
+  public async getUserLogs(userId: string): Promise<any[]> {
     try {
       const q = query(
         collection(db, 'logs'),

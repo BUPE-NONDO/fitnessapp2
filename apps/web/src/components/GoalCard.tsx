@@ -83,7 +83,7 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className={cn(getTypography('label'), 'text-sm')}>Progress</span>
+              <span className={getTypography('label')}>Progress</span>
               <Badge variant={getProgressVariant(progress)} size="sm">
                 {progress}%
               </Badge>
@@ -139,7 +139,7 @@ export function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
               )}
             </div>
 
-            <div className={cn(getTypography('caption'), 'text-xs')}>
+            <div className={getTypography('caption')}>
               Created: {new Date(goal.createdAt).toLocaleDateString()}
             </div>
           </div>
