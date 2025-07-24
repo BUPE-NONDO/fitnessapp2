@@ -37,7 +37,7 @@ export function PersonalizedOnboardingFunnel({
     { id: 'preferences', title: 'Your preferences', component: ExperiencePreferencesStep },
     { id: 'progress', title: 'Creating your plan...', component: ProgressPreviewStep },
     { id: 'plan', title: 'Your personalized plan', component: PlanSummaryStep },
-    { id: 'subscription', title: 'Unlock your plan', component: SubscriptionPaywallStep },
+    { id: 'workout', title: 'Your workout plan', component: WorkoutPlanStep },
     { id: 'complete', title: 'Welcome to FitnessApp!', component: ConversionCompleteStep }
   ];
 
@@ -872,211 +872,301 @@ function PlanSummaryStep({ data, nextStep, prevStep }: StepProps) {
   );
 }
 
-// Step 9: Subscription Paywall
-function SubscriptionPaywallStep({ data, updateData, nextStep, prevStep }: StepProps) {
-  const [selectedTier, setSelectedTier] = React.useState<'basic' | 'premium' | 'elite'>('premium');
+// Step 9: Workout Plan Generation
+function WorkoutPlanStep({ data, updateData, nextStep, prevStep }: StepProps) {
+  const [generatingPlan, setGeneratingPlan] = useState(true);
+  const [workoutPlan, setWorkoutPlan] = useState<any>(null);
 
-  const tiers = [
-    {
-      id: 'basic' as const,
-      name: 'Basic',
-      price: 9.99,
-      originalPrice: 19.99,
-      savings: '50%',
-      features: [
-        'Personalized workout plan',
-        'Basic progress tracking',
-        'Email support'
-      ],
-      popular: false
-    },
-    {
-      id: 'premium' as const,
-      name: 'Premium',
-      price: 19.99,
-      originalPrice: 39.99,
-      savings: '50%',
-      features: [
-        'Everything in Basic',
-        'Advanced analytics',
-        'Nutrition guidance',
-        'Priority support',
-        'Video demonstrations'
-      ],
-      popular: true
-    },
-    {
-      id: 'elite' as const,
-      name: 'Elite',
-      price: 29.99,
-      originalPrice: 59.99,
-      savings: '50%',
-      features: [
-        'Everything in Premium',
-        '1-on-1 coaching calls',
-        'Custom meal plans',
-        'Supplement recommendations',
-        '24/7 chat support'
-      ],
-      popular: false
-    }
-  ];
+  useEffect(() => {
+    // Simulate plan generation
+    const timer = setTimeout(() => {
+      const plan = generateWorkoutPlan(data);
+      setWorkoutPlan(plan);
+      setGeneratingPlan(false);
+    }, 3000);
 
-  const handleSubscribe = () => {
-    updateData({ subscriptionTier: selectedTier });
+    return () => clearTimeout(timer);
+  }, [data]);
+
+  const generateWorkoutPlan = (userData: any) => {
+    const { primaryGoal, fitnessLevel, workoutEnvironment, availableTime } = userData;
+
+    const workoutPlans = {
+      'lose-weight': {
+        title: 'Fat Burning Transformation',
+        description: 'High-intensity workouts designed to maximize calorie burn',
+        workoutsPerWeek: 4,
+        duration: availableTime || '30-45',
+        exercises: [
+          { name: 'HIIT Cardio', sets: '20 min', reps: 'Intervals', muscle: 'Full Body' },
+          { name: 'Burpees', sets: '3', reps: '10-15', muscle: 'Full Body' },
+          { name: 'Mountain Climbers', sets: '3', reps: '30 sec', muscle: 'Core' },
+          { name: 'Jump Squats', sets: '3', reps: '15', muscle: 'Legs' },
+          { name: 'Push-ups', sets: '3', reps: '10-15', muscle: 'Upper Body' }
+        ]
+      },
+      'gain-muscle': {
+        title: 'Muscle Building Program',
+        description: 'Strength training focused on muscle growth and power',
+        workoutsPerWeek: 5,
+        duration: availableTime || '45-60',
+        exercises: [
+          { name: 'Squats', sets: '4', reps: '8-12', muscle: 'Legs' },
+          { name: 'Deadlifts', sets: '4', reps: '6-10', muscle: 'Back/Legs' },
+          { name: 'Bench Press', sets: '4', reps: '8-12', muscle: 'Chest' },
+          { name: 'Pull-ups', sets: '3', reps: '6-10', muscle: 'Back' },
+          { name: 'Overhead Press', sets: '3', reps: '8-12', muscle: 'Shoulders' }
+        ]
+      },
+      'tone-body': {
+        title: 'Body Toning & Sculpting',
+        description: 'Balanced workouts for lean muscle and definition',
+        workoutsPerWeek: 4,
+        duration: availableTime || '30-45',
+        exercises: [
+          { name: 'Bodyweight Squats', sets: '3', reps: '15-20', muscle: 'Legs' },
+          { name: 'Lunges', sets: '3', reps: '12 each leg', muscle: 'Legs' },
+          { name: 'Plank', sets: '3', reps: '30-60 sec', muscle: 'Core' },
+          { name: 'Tricep Dips', sets: '3', reps: '10-15', muscle: 'Arms' },
+          { name: 'Glute Bridges', sets: '3', reps: '15-20', muscle: 'Glutes' }
+        ]
+      },
+      'increase-endurance': {
+        title: 'Endurance & Stamina Builder',
+        description: 'Cardiovascular training to boost your stamina',
+        workoutsPerWeek: 5,
+        duration: availableTime || '30-45',
+        exercises: [
+          { name: 'Running/Jogging', sets: '1', reps: '20-30 min', muscle: 'Cardio' },
+          { name: 'Cycling', sets: '1', reps: '25-35 min', muscle: 'Cardio' },
+          { name: 'Jump Rope', sets: '3', reps: '2 min', muscle: 'Full Body' },
+          { name: 'High Knees', sets: '3', reps: '30 sec', muscle: 'Cardio' },
+          { name: 'Stair Climbing', sets: '3', reps: '5 min', muscle: 'Legs/Cardio' }
+        ]
+      }
+    };
+
+    return workoutPlans[primaryGoal as keyof typeof workoutPlans] || workoutPlans['tone-body'];
+  };
+
+  const handleContinue = () => {
+    updateData({ workoutPlan });
     nextStep();
   };
 
-  return (
-    <div className="py-12">
-      <div className="text-center mb-12">
-        <div className="text-6xl mb-6">🔓</div>
-        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Unlock Your Transformation
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-          Choose your plan and start your fitness journey today
-        </p>
+  if (generatingPlan) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <div className="mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            🏋️ Creating Your Personalized Workout Plan
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Our AI is analyzing your goals and preferences to create the perfect workout routine...
+          </p>
+        </div>
 
-        {/* Limited Time Offer */}
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 max-w-md mx-auto">
-          <div className="text-red-600 dark:text-red-400 font-bold">🔥 Limited Time Offer</div>
-          <div className="text-sm text-red-700 dark:text-red-300">Save 50% on all plans - Today only!</div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+            Analyzing your fitness goals...
+          </div>
+          <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="w-2 h-2 bg-purple-500 rounded-full mr-3 animate-pulse"></div>
+            Selecting optimal exercises...
+          </div>
+          <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-400">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+            Customizing intensity levels...
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={`relative rounded-2xl border-2 p-8 transition-all duration-200 cursor-pointer ${
-                selectedTier === tier.id
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 transform scale-105'
-                  : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-300'
-              } ${tier.popular ? 'ring-2 ring-blue-500' : ''}`}
-              onClick={() => setSelectedTier(tier.id)}
-            >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  {tier.name}
-                </h3>
-                <div className="mb-2">
-                  <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                    ${tier.price}
-                  </span>
-                  <span className="text-gray-500 dark:text-gray-400">/month</span>
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                  Was ${tier.originalPrice}/month
-                </div>
-                <div className="text-green-600 dark:text-green-400 font-bold">
-                  Save {tier.savings}!
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {tier.features.map((feature, index) => (
-                  <li key={index} className="flex items-center space-x-3">
-                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-gray-700 dark:text-gray-300">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="text-center">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  Weekly cost: ${(tier.price / 4).toFixed(2)}
-                </div>
-              </div>
-            </div>
-          ))}
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium mb-4">
+          🎯 Plan Ready!
         </div>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          {workoutPlan?.title}
+        </h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300">
+          {workoutPlan?.description}
+        </p>
+      </div>
 
-        {/* Value Proposition */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl p-8 mb-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Why Choose FitnessApp?
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl mb-2">🎯</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Personalized</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Plans tailored to your goals</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-2">📱</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Convenient</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Workout anywhere, anytime</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-2">🏆</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Proven Results</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">50K+ success stories</div>
-              </div>
+      <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            📊 Your Plan Overview
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Workouts per week:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{workoutPlan?.workoutsPerWeek}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Duration per session:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{workoutPlan?.duration} min</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Difficulty level:</span>
+              <span className="font-semibold text-gray-900 dark:text-white capitalize">{data.fitnessLevel}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-300">Environment:</span>
+              <span className="font-semibold text-gray-900 dark:text-white capitalize">{data.workoutEnvironment}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-between">
-          <button
-            onClick={prevStep}
-            className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
-          >
-            ← Back
-          </button>
-          <button
-            onClick={handleSubscribe}
-            className="px-8 py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 text-lg"
-          >
-            🚀 Start My Transformation - ${tiers.find(t => t.id === selectedTier)?.price}/month
-          </button>
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            🏆 Sample Exercises
+          </h3>
+          <div className="space-y-3">
+            {workoutPlan?.exercises.slice(0, 4).map((exercise: any, index: number) => (
+              <div key={index} className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white">{exercise.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{exercise.muscle}</div>
+                </div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {exercise.sets} × {exercise.reps}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            30-day money-back guarantee • Cancel anytime • Secure payment
-          </p>
-        </div>
+      <div className="flex justify-between">
+        <button
+          onClick={prevStep}
+          className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
+        >
+          ← Back
+        </button>
+        <button
+          onClick={handleContinue}
+          className="px-8 py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 text-lg"
+        >
+          🚀 Start My Fitness Journey!
+        </button>
       </div>
     </div>
   );
 }
 
-// Step 10: Conversion & Onboarding Complete
+// Step 10: Conversion & Onboarding Complete with Badges
 function ConversionCompleteStep({ data, onComplete, isSubmitting }: StepProps) {
   const [email, setEmail] = React.useState('');
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [earnedBadges, setEarnedBadges] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    // Generate badges based on user data
+    const badges = generateWelcomeBadges(data);
+    setEarnedBadges(badges);
+  }, [data]);
+
+  const generateWelcomeBadges = (userData: any) => {
+    const badges = [];
+
+    // Welcome badge for everyone
+    badges.push({
+      id: 'welcome',
+      name: 'Welcome Warrior',
+      description: 'Completed your fitness profile setup',
+      icon: '🎯',
+      color: 'bg-blue-500'
+    });
+
+    // Goal-specific badges
+    if (userData.primaryGoal === 'lose-weight') {
+      badges.push({
+        id: 'fat-burner',
+        name: 'Fat Burner',
+        description: 'Ready to torch calories and lose weight',
+        icon: '🔥',
+        color: 'bg-red-500'
+      });
+    } else if (userData.primaryGoal === 'gain-muscle') {
+      badges.push({
+        id: 'muscle-builder',
+        name: 'Muscle Builder',
+        description: 'Ready to build strength and muscle',
+        icon: '💪',
+        color: 'bg-green-500'
+      });
+    } else if (userData.primaryGoal === 'tone-body') {
+      badges.push({
+        id: 'body-sculptor',
+        name: 'Body Sculptor',
+        description: 'Ready to tone and sculpt your physique',
+        icon: '✨',
+        color: 'bg-purple-500'
+      });
+    } else if (userData.primaryGoal === 'increase-endurance') {
+      badges.push({
+        id: 'endurance-athlete',
+        name: 'Endurance Athlete',
+        description: 'Ready to boost stamina and endurance',
+        icon: '🏃',
+        color: 'bg-orange-500'
+      });
+    }
+
+    // Fitness level badge
+    if (userData.fitnessLevel === 'beginner') {
+      badges.push({
+        id: 'fresh-start',
+        name: 'Fresh Start',
+        description: 'Beginning your fitness journey',
+        icon: '🌱',
+        color: 'bg-green-400'
+      });
+    } else if (userData.fitnessLevel === 'intermediate') {
+      badges.push({
+        id: 'level-up',
+        name: 'Level Up',
+        description: 'Taking your fitness to the next level',
+        icon: '⬆️',
+        color: 'bg-blue-400'
+      });
+    } else if (userData.fitnessLevel === 'advanced') {
+      badges.push({
+        id: 'elite-performer',
+        name: 'Elite Performer',
+        description: 'Advanced athlete ready for challenges',
+        icon: '🏆',
+        color: 'bg-yellow-500'
+      });
+    }
+
+    return badges;
+  };
 
   const handleComplete = async () => {
     setIsDownloading(true);
-    // Simulate app download/installation process
+    // Simulate app setup process
     setTimeout(() => {
       onComplete();
     }, 2000);
   };
 
-  const selectedTier = data.subscriptionTier || 'premium';
-  const tierLabels = {
-    basic: 'Basic',
-    premium: 'Premium',
-    elite: 'Elite'
-  };
-
   return (
     <div className="py-12 text-center">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Success Animation */}
         <div className="text-8xl mb-8 animate-bounce">🎉</div>
 
@@ -1085,22 +1175,31 @@ function ConversionCompleteStep({ data, onComplete, isSubmitting }: StepProps) {
         </h2>
 
         <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-          Congratulations! You've successfully subscribed to the {tierLabels[selectedTier]} plan.
+          Congratulations! Your personalized fitness plan is ready.
           Your transformation journey starts now!
         </p>
 
-        {/* Subscription Confirmation */}
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6 mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        {/* Earned Badges */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-8 mb-8">
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-xl font-bold text-green-700 dark:text-green-300">
-              Subscription Confirmed
+            <span className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+              🏆 Badges Earned!
             </span>
           </div>
-          <div className="text-green-600 dark:text-green-400">
-            {tierLabels[selectedTier]} Plan • Your personalized fitness journey awaits
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {earnedBadges.map((badge) => (
+              <div key={badge.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className={`w-12 h-12 ${badge.color} rounded-full flex items-center justify-center text-2xl mx-auto mb-3`}>
+                  {badge.icon}
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white mb-1">{badge.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{badge.description}</p>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -35,12 +35,21 @@ function AppContent() {
     isLoading: onboardingLoading,
   } = usePostLoginOnboarding();
 
-  // Show login success transition for new logins
+  // Show login success transition for new logins, but skip if onboarding should trigger
   React.useEffect(() => {
     if (justLoggedIn && user && !isOnboardingOpen) {
-      setShowLoginTransition(true);
+      // Check if this is a new user who should go straight to onboarding
+      const shouldSkipTransition = sessionStorage.getItem('skip-login-transition') === 'true';
+
+      if (shouldSkipTransition) {
+        // Clear the flag and skip transition
+        sessionStorage.removeItem('skip-login-transition');
+        clearJustLoggedIn();
+      } else {
+        setShowLoginTransition(true);
+      }
     }
-  }, [justLoggedIn, user, isOnboardingOpen]);
+  }, [justLoggedIn, user, isOnboardingOpen, clearJustLoggedIn]);
 
   const handleLoginTransitionComplete = () => {
     setShowLoginTransition(false);

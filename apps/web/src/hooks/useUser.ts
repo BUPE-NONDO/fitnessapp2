@@ -28,7 +28,18 @@ export interface UserProfile {
     availableTime?: '15-30' | '30-45' | '45-60' | '60+';
     equipmentAccess?: 'none' | 'basic' | 'full-gym';
     workoutDaysPerWeek?: number;
-    selectedPlan?: 'basic' | 'premium' | 'elite';
+    workoutPlan?: {
+      title: string;
+      description: string;
+      workoutsPerWeek: number;
+      duration: string;
+      exercises: Array<{
+        name: string;
+        sets: string;
+        reps: string;
+        muscle: string;
+      }>;
+    };
     completedAt?: Date;
   };
 

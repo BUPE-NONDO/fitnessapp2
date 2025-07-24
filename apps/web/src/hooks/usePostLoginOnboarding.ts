@@ -35,19 +35,24 @@ export function usePostLoginOnboarding(): UsePostLoginOnboardingReturn {
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [hasCheckedFirstLogin, setHasCheckedFirstLogin] = useState(false);
 
-  // Check if user is new (created recently)
-  const isNewUser = userProfile ? 
-    (new Date().getTime() - userProfile.createdAt.getTime()) < (24 * 60 * 60 * 1000) : // 24 hours
+  // Check if user is new (created recently) - extended to 7 days for better onboarding coverage
+  const isNewUser = userProfile ?
+    (new Date().getTime() - userProfile.createdAt.getTime()) < (7 * 24 * 60 * 60 * 1000) : // 7 days
     false;
 
   // Check if onboarding is completed
   const isOnboardingCompleted = onboardingService.checkOnboardingStatus(userProfile);
 
-  // Determine if onboarding should be shown
-  const shouldShowOnboarding = !userLoading && 
-    userProfile && 
-    !isOnboardingCompleted && 
-    isNewUser &&
+  // Check if this is a fresh signup (user created within last 5 minutes)
+  const isFreshSignup = userProfile ?
+    (new Date().getTime() - userProfile.createdAt.getTime()) < (5 * 60 * 1000) : // 5 minutes
+    false;
+
+  // Determine if onboarding should be shown - more aggressive triggering for new users
+  const shouldShowOnboarding = !userLoading &&
+    userProfile &&
+    !isOnboardingCompleted &&
+    (isNewUser || !userProfile.onboardingCompleted || isFreshSignup) && // Show for new users, incomplete onboarding, or fresh signups
     !sessionStorage.getItem(ONBOARDING_SHOWN_KEY);
 
   // Check for first login after authentication
@@ -73,20 +78,29 @@ export function usePostLoginOnboarding(): UsePostLoginOnboardingReturn {
   // Auto-trigger onboarding for new users on login
   useEffect(() => {
     if (shouldShowOnboarding && justLoggedIn && !isOnboardingOpen) {
-      console.log('🎯 Auto-triggering onboarding for new user after login');
+      console.log('🎯 Auto-triggering onboarding for new user after login', {
+        isNewUser,
+        isFreshSignup,
+        onboardingCompleted: userProfile?.onboardingCompleted,
+        userCreatedAt: userProfile?.createdAt,
+        timeSinceCreation: userProfile ? new Date().getTime() - userProfile.createdAt.getTime() : 0
+      });
 
-      // Small delay to ensure smooth transition
+      // For immediate onboarding, skip login transition
+      sessionStorage.setItem('skip-login-transition', 'true');
+
+      // Very short delay for immediate onboarding trigger
       const timer = setTimeout(() => {
         setIsOnboardingOpen(true);
         // Mark that onboarding has been shown this session
         sessionStorage.setItem(ONBOARDING_SHOWN_KEY, 'true');
         // Clear the just logged in flag
         clearJustLoggedIn();
-      }, 1500);
+      }, 300); // Very short delay for immediate trigger
 
       return () => clearTimeout(timer);
     }
-  }, [shouldShowOnboarding, justLoggedIn, isOnboardingOpen, clearJustLoggedIn]);
+  }, [shouldShowOnboarding, justLoggedIn, isOnboardingOpen, clearJustLoggedIn, isNewUser, userProfile]);
 
   const startOnboarding = useCallback(() => {
     setIsOnboardingOpen(true);

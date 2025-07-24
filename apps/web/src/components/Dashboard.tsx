@@ -6,7 +6,7 @@ import { GoalsList } from './GoalsList';
 import { ActivityLogsList } from './ActivityLogsList';
 import { ProgressDashboard } from './ProgressDashboard';
 import { UserProfile } from './UserProfile';
-import { BadgeManager } from './BadgeDisplay';
+import { BadgeSystem } from './BadgeSystem';
 import { OnboardingWizard } from './onboarding/OnboardingWizard';
 import Container from './ui/Container';
 import Button from './ui/Button';
@@ -127,24 +127,24 @@ export function Dashboard() {
           <div className="space-y-6">
             {/* Welcome Banner for New Users */}
             {isOnboardingRequired && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="text-4xl">👋</div>
+                    <div className="text-4xl">🎯</div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Welcome to FitnessApp!
+                        Complete Your Personalized Setup
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 mt-1">
-                        Complete your personalized setup to get the most out of your fitness journey.
+                        Take our 1-minute quiz to get a personalized fitness plan tailored just for you!
                       </p>
                     </div>
                   </div>
                   <Button
                     onClick={triggerOnboarding}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-xl"
                   >
-                    Complete Setup
+                    🚀 Start Quiz
                   </Button>
                 </div>
               </div>
@@ -153,7 +153,7 @@ export function Dashboard() {
             {activeTab === 'overview' && <ProgressDashboard />}
             {activeTab === 'goals' && <GoalsList />}
             {activeTab === 'logs' && <ActivityLogsList />}
-            {activeTab === 'badges' && <BadgeManager />}
+            {activeTab === 'badges' && <BadgeSystem />}
             {activeTab === 'profile' && <UserProfile />}
           </div>
         </Container>
