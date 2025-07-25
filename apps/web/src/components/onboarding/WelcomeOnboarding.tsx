@@ -75,6 +75,7 @@ export function WelcomeOnboarding({
       <OnboardingWizard
         onComplete={handleWizardComplete}
         onExit={handleWizardExit}
+        isLoading={isLoading}
       />
     );
   }

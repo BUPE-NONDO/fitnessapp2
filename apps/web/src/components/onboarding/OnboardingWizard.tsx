@@ -98,12 +98,14 @@ interface OnboardingWizardProps {
   onComplete?: (data: OnboardingData) => void;
   onExit?: () => void;
   initialData?: Partial<OnboardingData>;
+  isLoading?: boolean;
 }
 
 export function OnboardingWizard({
   onComplete,
   onExit,
-  initialData
+  initialData,
+  isLoading = false
 }: OnboardingWizardProps) {
   const { user } = useUser();
   const {
@@ -120,12 +122,20 @@ export function OnboardingWizard({
   } = useOnboardingFlow(initialData);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
-  // Auto-save progress periodically using isolated service
+  // Auto-save progress periodically using isolated service (disabled during completion)
   useEffect(() => {
+    // Don't auto-save if we're in the completion process, loading, or on final steps (8-9)
+    if (isLoading || isCompleting || currentStep >= 8) {
+      console.log(`🚫 Auto-save disabled: isLoading=${isLoading}, isCompleting=${isCompleting}, currentStep=${currentStep}`);
+      return;
+    }
+
     const interval = setInterval(async () => {
-      if (user && data && currentStep > 0) {
+      if (user && data && currentStep > 0 && currentStep < 8 && !isLoading && !isCompleting) {
         try {
+          console.log(`💾 Auto-saving progress for step ${currentStep}`);
           await IsolatedOnboardingService.updateOnboardingProgress(user.uid, currentStep, data);
           saveProgress(); // Also save to localStorage
         } catch (error) {
@@ -135,7 +145,7 @@ export function OnboardingWizard({
     }, 30000); // Save every 30 seconds
 
     return () => clearInterval(interval);
-  }, [user, data, currentStep, saveProgress]);
+  }, [user, data, currentStep, saveProgress, isLoading, isCompleting]);
 
   const handleNext = async () => {
     if (!canGoNext || isTransitioning) return;
@@ -147,7 +157,13 @@ export function OnboardingWizard({
       
       // If we've completed all steps, call onComplete
       if (currentStep >= TOTAL_STEPS - 1) {
-        onComplete?.(data);
+        console.log('🎉 Starting onboarding completion process...');
+        setIsCompleting(true);
+        try {
+          onComplete?.(data);
+        } finally {
+          setIsCompleting(false);
+        }
       }
     } catch (error) {
       console.error('Error proceeding to next step:', error);
