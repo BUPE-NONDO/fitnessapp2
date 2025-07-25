@@ -14,38 +14,50 @@ interface PlanSummaryStepProps {
 export function PlanSummaryStep({ data, onUpdate, onNext }: PlanSummaryStepProps) {
   const [isGenerating, setIsGenerating] = useState(true);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   // Generate free workout plan based on user data (only once)
   useEffect(() => {
-    // Only generate if we don't already have a plan
-    if (generatedPlan || data.generatedPlan) {
+    // If we already have a plan in data, use it
+    if (data.generatedPlan && !generatedPlan) {
+      console.log('📋 Using existing generated plan from data');
+      setGeneratedPlan(data.generatedPlan);
       setIsGenerating(false);
-      if (data.generatedPlan && !generatedPlan) {
-        setGeneratedPlan(data.generatedPlan);
-      }
+      setHasGenerated(true);
+      return;
+    }
+
+    // If we already generated a plan, don't generate again
+    if (hasGenerated || generatedPlan) {
+      console.log('📋 Plan already generated, skipping');
+      setIsGenerating(false);
       return;
     }
 
     const generateFreePlan = async () => {
+      console.log('🏋️ Starting plan generation...');
       setIsGenerating(true);
 
       // Simulate plan generation delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const plan = createPersonalizedPlan(data);
+      console.log('✅ Plan generated:', plan.title);
       setGeneratedPlan(plan);
+      setHasGenerated(true);
 
-      // Update onboarding data with generated plan
+      // Update onboarding data with generated plan (only once)
       onUpdate({
         generatedPlan: plan,
         workoutPlan: plan // Also store in workoutPlan for compatibility
       });
 
       setIsGenerating(false);
+      console.log('✅ Plan generation complete');
     };
 
     generateFreePlan();
-  }, []); // Remove dependencies to prevent infinite loop
+  }, [data.generatedPlan]); // Only depend on existing plan data
 
   const createPersonalizedPlan = (userData: OnboardingData) => {
     const goal = userData.primaryGoal || 'general-fitness';
