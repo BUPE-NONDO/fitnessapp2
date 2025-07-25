@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useHealthCheck, useGoals } from '@/hooks/useTRPC';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { AdminAuthService } from '@/services/adminAuthService';
 import { GoalsList } from './GoalsList';
 import { ActivityLogsList } from './ActivityLogsList';
-import { ProgressDashboard } from './ProgressDashboard';
+import { ProgressDashboard } from './dashboard/ProgressDashboard';
 import { UserProfile } from './UserProfile';
 import { BadgeSystem } from './BadgeSystem';
 import { OnboardingWizard } from './onboarding/OnboardingWizard';
+import { WorkoutRoutineComponent } from './workout/WorkoutRoutine';
+import { DailyCheckIn } from './workout/DailyCheckIn';
+import { Icon } from './ui/Icon';
+import { ThemeToggle } from '@/contexts/ThemeContext';
 import Container from './ui/Container';
 import Button from './ui/Button';
 import { cn, getTypography } from '@/styles/design-system';
@@ -24,7 +29,19 @@ export function Dashboard() {
     triggerOnboarding,
   } = useOnboarding();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'goals' | 'logs' | 'badges' | 'profile'>('overview'); // Start with overview tab
+  const [activeTab, setActiveTab] = useState<'overview' | 'workout' | 'checkin' | 'goals' | 'logs' | 'badges' | 'profile'>('overview'); // Start with overview tab
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  React.useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user?.email) {
+        const adminStatus = await AdminAuthService.isAdminEmail(user.email);
+        setIsAdmin(adminStatus);
+      }
+    };
+    checkAdminStatus();
+  }, [user]);
 
   const handleOnboardingComplete = async (onboardingData: any) => {
     try {
@@ -75,6 +92,21 @@ export function Dashboard() {
                   Welcome, {user?.displayName || user?.email?.split('@')[0] || 'User'}!
                 </span>
               </div>
+
+              {/* Theme Toggle */}
+              <ThemeToggle size="md" />
+
+              {/* Admin Access Button */}
+              {isAdmin && (
+                <button
+                  onClick={() => window.location.href = '/admin'}
+                  className="flex items-center space-x-2 px-3 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-400 rounded-lg transition-colors duration-200"
+                  title="Access Admin Portal"
+                >
+                  <Icon name="shield" size={16} />
+                  <span className="hidden sm:inline text-sm font-medium">Admin</span>
+                </button>
+              )}
               <Button
                 variant="secondary"
                 size="sm"
@@ -98,6 +130,8 @@ export function Dashboard() {
           <div className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'overview', label: 'Overview', icon: '📊' },
+              { id: 'workout', label: 'Workout', icon: '🏋️' },
+              { id: 'checkin', label: 'Check-in', icon: '✅' },
               { id: 'goals', label: 'Goals', icon: '🎯' },
               { id: 'logs', label: 'Activity Logs', icon: '📝' },
               { id: 'badges', label: 'Achievements', icon: '🏆' },
@@ -151,6 +185,8 @@ export function Dashboard() {
             )}
 
             {activeTab === 'overview' && <ProgressDashboard />}
+            {activeTab === 'workout' && <WorkoutRoutineComponent />}
+            {activeTab === 'checkin' && <DailyCheckIn />}
             {activeTab === 'goals' && <GoalsList />}
             {activeTab === 'logs' && <ActivityLogsList />}
             {activeTab === 'badges' && <BadgeSystem />}

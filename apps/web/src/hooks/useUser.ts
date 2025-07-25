@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { UserDataCleanupService } from '@/services/userDataCleanupService';
+import { IsolatedOnboardingService } from '@/services/isolatedOnboardingService';
 
 export interface UserProfile {
   uid: string;
@@ -13,6 +15,7 @@ export interface UserProfile {
 
   // Onboarding status
   onboardingCompleted?: boolean;
+  onboardingStarted?: boolean;
   onboardingData?: {
     ageRange?: '18-29' | '30-39' | '40-49' | '50+';
     gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
@@ -47,7 +50,55 @@ export interface UserProfile {
     theme?: 'light' | 'dark' | 'system';
     notifications?: boolean;
     units?: 'metric' | 'imperial';
+    language?: string;
+    emailUpdates?: boolean;
   };
+
+  // New progress stats structure
+  progressStats?: {
+    totalWorkouts: number;
+    totalGoals: number;
+    totalCheckIns: number;
+    totalBadges: number;
+    currentStreak: number;
+    longestStreak: number;
+    weeklyGoalProgress: number;
+    monthlyGoalProgress: number;
+    lastActivityDate: Date | null;
+  };
+
+  // User badges and achievements
+  badges?: string[];
+  achievements?: string[];
+
+  // Workout plan (top-level for easy access)
+  workoutPlan?: {
+    id: string;
+    title: string;
+    description: string;
+    goal: string;
+    fitnessLevel: string;
+    workoutsPerWeek: number;
+    duration: number;
+    estimatedCaloriesPerWeek: number;
+    createdAt: Date;
+  };
+
+  // User settings
+  settings?: {
+    privacy: 'public' | 'private';
+    shareProgress: boolean;
+    allowFriendRequests: boolean;
+  };
+
+  // Additional timestamps
+  lastLoginAt?: Date;
+
+  // User flags
+  isNewUser?: boolean;
+  dataInitialized?: boolean;
+
+  // Legacy stats for backward compatibility
   stats?: {
     totalGoals: number;
     activeGoals: number;
@@ -135,38 +186,89 @@ export function useUser(): UseUserReturn {
           },
         });
       } else {
-        // Create new user profile
-        const newProfile: UserProfile = {
-          uid: firebaseUser.uid,
+        // Initialize fresh user with completely clean data
+        console.log('🆕 Creating fresh user profile for:', firebaseUser.uid);
+
+        const userProfileData = {
           email: firebaseUser.email || '',
           displayName: firebaseUser.displayName || 'User',
           photoURL: firebaseUser.photoURL,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          onboardingCompleted: false,
-          preferences: {
-            theme: 'system',
-            notifications: true,
-            units: 'metric',
-          },
-          stats: {
-            totalGoals: 0,
-            activeGoals: 0,
-            totalLogs: 0,
-            streakDays: 0,
-            joinedDate: new Date(),
-          },
         };
 
-        // Save to Firestore
-        await setDoc(userDocRef, {
-          ...newProfile,
-          createdAt: Timestamp.fromDate(newProfile.createdAt),
-          updatedAt: Timestamp.fromDate(newProfile.updatedAt),
-          'stats.joinedDate': Timestamp.fromDate(newProfile.stats!.joinedDate),
-        });
+        // Create fresh user with isolated subcollection structure
+        try {
+          console.log('🆕 Creating fresh user with isolated structure...');
 
-        setUserProfile(newProfile);
+          await UserDataCleanupService.createFreshUser(firebaseUser.uid, {
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || '',
+            photoURL: firebaseUser.photoURL || null,
+          });
+
+          // Initialize isolated onboarding
+          await IsolatedOnboardingService.initializeOnboarding(firebaseUser.uid);
+
+          console.log('✅ Fresh user created with isolated subcollection structure');
+        } catch (createError) {
+          console.error('❌ Failed to create fresh user:', createError);
+          throw new Error('Failed to create user profile');
+        }
+
+        // Fetch the newly created profile
+        const freshUserDoc = await getDoc(userDocRef);
+        if (freshUserDoc.exists()) {
+          const data = freshUserDoc.data();
+          const freshProfile: UserProfile = {
+            uid: data.uid,
+            email: data.email,
+            displayName: data.displayName,
+            photoURL: data.photoURL,
+            createdAt: data.createdAt?.toDate() || new Date(),
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+            onboardingCompleted: false, // Force fresh start for all users
+            onboardingStarted: false,   // Force fresh start
+            onboardingData: undefined,  // Clear any existing onboarding data
+            generatedPlan: undefined,   // Clear any existing plan
+            workoutPlan: undefined,     // Clear any existing workout plan
+            isNewUser: true,            // Mark as new user
+            preferences: data.preferences || {
+              theme: 'light',
+              notifications: true,
+              units: 'metric',
+            },
+            progressStats: data.progressStats || {
+              totalWorkouts: 0,
+              totalGoals: 0,
+              totalCheckIns: 0,
+              totalBadges: 0,
+              currentStreak: 0,
+              longestStreak: 0,
+              weeklyGoalProgress: 0,
+              monthlyGoalProgress: 0,
+              lastActivityDate: null,
+            },
+            badges: data.badges || [],
+            achievements: data.achievements || [],
+            settings: data.settings || {
+              privacy: 'private',
+              shareProgress: false,
+              allowFriendRequests: true,
+            },
+            // Legacy stats for backward compatibility
+            stats: {
+              totalGoals: 0,
+              activeGoals: 0,
+              totalLogs: 0,
+              streakDays: 0,
+              joinedDate: data.createdAt?.toDate() || new Date(),
+            },
+          };
+
+          setUserProfile(freshProfile);
+          console.log('✅ Fresh user profile created and loaded');
+        } else {
+          throw new Error('Failed to create fresh user profile');
+        }
       }
     } catch (err) {
       console.error('Error fetching user profile:', err);

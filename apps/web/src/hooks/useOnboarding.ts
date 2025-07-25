@@ -1,25 +1,27 @@
 import { useState, useCallback } from 'react';
 import { useUser } from './useUser';
 import { useGoals } from './useTRPC';
-import { onboardingService } from '@/services/onboardingService';
 import { OnboardingData } from '@/components/onboarding/OnboardingWizard';
+import { IsolatedOnboardingService } from '@/services/isolatedOnboardingService';
+import { ExerciseDatabase } from '@/services/exerciseDatabase';
 
 interface UseOnboardingReturn {
   // Status
   isOnboardingCompleted: boolean;
   shouldShowOnboarding: boolean;
   isOnboardingRequired: boolean;
-  
+
   // Actions
   completeOnboarding: (data: OnboardingData) => Promise<void>;
   saveOnboardingProgress: (data: OnboardingData) => Promise<void>;
   triggerOnboarding: () => void;
   skipOnboarding: () => Promise<void>;
-  
+  restartOnboarding: () => Promise<void>;
+
   // State
   isOnboardingOpen: boolean;
   setIsOnboardingOpen: (open: boolean) => void;
-  
+
   // Loading
   isLoading: boolean;
   error: string | null;
@@ -34,13 +36,13 @@ export function useOnboarding(): UseOnboardingReturn {
   const [error, setError] = useState<string | null>(null);
 
   // Check if onboarding is completed
-  const isOnboardingCompleted = onboardingService.checkOnboardingStatus(userProfile);
-  
+  const isOnboardingCompleted = userProfile?.onboardingCompleted || false;
+
   // Check if user has goals
   const hasGoals = (goalsResponse?.data?.length || 0) > 0;
-  
+
   // Determine if onboarding should be shown
-  const shouldShowOnboarding = onboardingService.shouldTriggerOnboarding(userProfile, hasGoals);
+  const shouldShowOnboarding = !isOnboardingCompleted && !hasGoals && !!userProfile;
   
   // Check if onboarding is required (new user without goals and without completed onboarding)
   const isOnboardingRequired = !isOnboardingCompleted && !hasGoals && !!userProfile;
@@ -57,34 +59,33 @@ export function useOnboarding(): UseOnboardingReturn {
       setIsLoading(true);
       setError(null);
 
-      // Save onboarding data to Firestore
-      await onboardingService.completeOnboarding(user.uid, data);
-      
-      // Update local user profile
+      console.log('🎉 Starting onboarding completion with data:', data);
+
+      // Initialize exercise database if needed
+      try {
+        await ExerciseDatabase.initializeExerciseDatabase();
+      } catch (error) {
+        console.warn('⚠️ Exercise database already initialized or failed to initialize:', error);
+      }
+
+      // Start onboarding if not already started
+      try {
+        await IsolatedOnboardingService.startOnboarding(user.uid);
+      } catch (error) {
+        console.warn('⚠️ Onboarding already started or failed to start:', error);
+      }
+
+      // Complete onboarding using isolated service
+      console.log('🏋️ Completing onboarding with isolated service...');
+      await IsolatedOnboardingService.completeOnboarding(user.uid, data);
+
+      // Update local user profile to reflect completion
       await updateProfile({
         onboardingCompleted: true,
-        onboardingData: {
-          ageRange: data.ageRange,
-          gender: data.gender,
-          bodyType: data.bodyType,
-          primaryGoal: data.primaryGoal,
-          currentWeight: data.currentWeight,
-          targetWeight: data.targetWeight,
-          height: data.height,
-          weightUnit: data.weightUnit,
-          heightUnit: data.heightUnit,
-          fitnessLevel: data.fitnessLevel,
-          workoutEnvironment: data.workoutEnvironment,
-          availableTime: data.availableTime,
-          equipmentAccess: data.equipmentAccess,
-          workoutDaysPerWeek: data.workoutDaysPerWeek,
-          selectedPlan: data.selectedPlan,
-          completedAt: new Date(),
-        },
       });
 
       setIsOnboardingOpen(false);
-      
+
       console.log('🎉 Onboarding completed successfully');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete onboarding';
@@ -105,7 +106,7 @@ export function useOnboarding(): UseOnboardingReturn {
     }
 
     try {
-      await onboardingService.saveOnboardingData(user.uid, data);
+      await IsolatedOnboardingService.updateOnboardingProgress(user.uid, data.currentStep || 1, data);
     } catch (err) {
       console.error('❌ Error saving onboarding progress:', err);
       // Don't throw here as this is auto-save
@@ -150,6 +151,42 @@ export function useOnboarding(): UseOnboardingReturn {
     }
   }, [user, updateProfile]);
 
+  /**
+   * Restart onboarding (reset user's onboarding status)
+   */
+  const restartOnboarding = useCallback(async () => {
+    if (!user) {
+      throw new Error('No user signed in');
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log('🔄 Restarting onboarding for user');
+
+      // Reset onboarding status using the isolated service
+      await IsolatedOnboardingService.resetOnboarding(user.uid);
+
+      // Update local user profile to reflect restart
+      await updateProfile({
+        onboardingCompleted: false,
+      });
+
+      // Open onboarding wizard
+      setIsOnboardingOpen(true);
+
+      console.log('✅ Onboarding restarted successfully');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to restart onboarding';
+      setError(errorMessage);
+      console.error('❌ Error restarting onboarding:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, updateProfile]);
+
   return {
     // Status
     isOnboardingCompleted,
@@ -161,6 +198,7 @@ export function useOnboarding(): UseOnboardingReturn {
     saveOnboardingProgress,
     triggerOnboarding,
     skipOnboarding,
+    restartOnboarding,
     
     // State
     isOnboardingOpen,

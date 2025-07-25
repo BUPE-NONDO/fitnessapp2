@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background: white;
+            color: black;
+        }
+        input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        button {
+            background: #8b5cf6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Input Field Test</h1>
+        <p>Test if input fields are working properly</p>
+
+        <div class="form-group">
+            <label for="test-email">Email Test:</label>
+            <input 
+                type="email" 
+                id="test-email" 
+                placeholder="Type your email here..."
+                onchange="updateResult('email', this.value)"
+                oninput="updateResult('email', this.value)"
+                onfocus="logEvent('Email focused')"
+                onblur="logEvent('Email blurred')"
+            >
+            <div id="email-result" class="test-result">Value: (empty)</div>
+        </div>
+
+        <div class="form-group">
+            <label for="test-password">Password Test:</label>
+            <input 
+                type="password" 
+                id="test-password" 
+                placeholder="Type your password here..."
+                onchange="updateResult('password', this.value)"
+                oninput="updateResult('password', this.value)"
+                onfocus="logEvent('Password focused')"
+                onblur="logEvent('Password blurred')"
+            >
+            <div id="password-result" class="test-result">Value: (empty)</div>
+        </div>
+
+        <div class="form-group">
+            <label for="test-text">Text Test:</label>
+            <input 
+                type="text" 
+                id="test-text" 
+                placeholder="Type anything here..."
+                onchange="updateResult('text', this.value)"
+                oninput="updateResult('text', this.value)"
+                onfocus="logEvent('Text focused')"
+                onblur="logEvent('Text blurred')"
+            >
+            <div id="text-result" class="test-result">Value: (empty)</div>
+        </div>
+
+        <button onclick="clearAll()">Clear All</button>
+        <button onclick="focusEmail()">Focus Email</button>
+        <button onclick="testProgrammatic()">Test Programmatic</button>
+
+        <div class="form-group">
+            <h3>Event Log:</h3>
+            <div id="event-log" class="test-result" style="height: 150px; overflow-y: auto;">
+                Ready for testing...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateResult(type, value) {
+            const resultEl = document.getElementById(type + '-result');
+            resultEl.textContent = `Value: "${value}" (${value.length} chars)`;
+            logEvent(`${type} changed: "${value}"`);
+        }
+
+        function logEvent(message) {
+            const logEl = document.getElementById('event-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<br>[${timestamp}] ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearAll() {
+            document.getElementById('test-email').value = '';
+            document.getElementById('test-password').value = '';
+            document.getElementById('test-text').value = '';
+            updateResult('email', '');
+            updateResult('password', '');
+            updateResult('text', '');
+            logEvent('All fields cleared');
+        }
+
+        function focusEmail() {
+            document.getElementById('test-email').focus();
+            logEvent('Email field focused programmatically');
+        }
+
+        function testProgrammatic() {
+            const emailInput = document.getElementById('test-email');
+            emailInput.value = 'test@example.com';
+            updateResult('email', emailInput.value);
+            logEvent('Email set programmatically');
+        }
+
+        // Test on page load
+        window.onload = function() {
+            logEvent('Page loaded - inputs ready for testing');
+            
+            // Test if inputs are accessible
+            const inputs = document.querySelectorAll('input');
+            logEvent(`Found ${inputs.length} input fields`);
+            
+            inputs.forEach((input, index) => {
+                logEvent(`Input ${index + 1}: type=${input.type}, id=${input.id}`);
+            });
+        };
+    </script>
+</body>
+</html>

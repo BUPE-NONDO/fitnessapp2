@@ -88,17 +88,28 @@ export class AuthService {
     try {
       console.log('🔐 Attempting email sign-up for:', email);
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      
+
       // Update display name if provided
       if (displayName && result.user) {
-        await updateProfile(result.user, { displayName });
-        console.log('✅ Display name updated:', displayName);
+        try {
+          await updateProfile(result.user, { displayName });
+          console.log('✅ Display name updated:', displayName);
+        } catch (profileError) {
+          console.warn('⚠️ Failed to update display name:', profileError);
+          // Don't fail the entire signup for this
+        }
       }
-      
-      console.log('✅ Email sign-up successful');
+
+      console.log('✅ Email sign-up successful for user:', result.user.uid);
       return result;
     } catch (error: any) {
       console.error('❌ Email sign-up error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        email: email,
+        customData: error.customData
+      });
       throw new Error(getAuthErrorMessage(error.code));
     }
   }

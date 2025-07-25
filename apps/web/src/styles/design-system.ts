@@ -5,19 +5,19 @@ export const designSystem = {
   // Color Palette
   colors: {
     primary: {
-      50: 'bg-blue-50',
-      100: 'bg-blue-100',
-      500: 'bg-blue-500',
-      600: 'bg-blue-600',
-      700: 'bg-blue-700',
-      900: 'bg-blue-900',
-    },
-    secondary: {
       50: 'bg-purple-50',
       100: 'bg-purple-100',
       500: 'bg-purple-500',
       600: 'bg-purple-600',
       700: 'bg-purple-700',
+      900: 'bg-purple-900',
+    },
+    secondary: {
+      50: 'bg-primary-50',
+      100: 'bg-primary-100',
+      500: 'bg-primary-500',
+      600: 'bg-primary-600',
+      700: 'bg-primary-700',
     },
     success: {
       50: 'bg-green-50',
@@ -74,16 +74,17 @@ export const designSystem = {
     '2xl': 'p-12',
   },
 
-  // Borders & Radius
+  // Borders & Radius (Circle-focused)
   borders: {
     none: 'border-0',
     thin: 'border border-gray-200 dark:border-gray-700',
     thick: 'border-2 border-gray-300 dark:border-gray-600',
     radius: {
-      sm: 'rounded-md',
-      md: 'rounded-lg',
-      lg: 'rounded-xl',
+      sm: 'rounded-xl',
+      md: 'rounded-2xl',
+      lg: 'rounded-3xl',
       full: 'rounded-full',
+      circle: 'rounded-full',
     },
   },
 
@@ -99,20 +100,20 @@ export const designSystem = {
   // Component Variants
   components: {
     card: {
-      base: 'bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700',
-      hover: 'hover:shadow-lg transition-shadow duration-200',
-      interactive: 'cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200',
+      base: 'bg-white dark:bg-gray-800 rounded-2xl shadow-circle border border-gray-200 dark:border-gray-700',
+      hover: 'hover:shadow-circle-lg transition-all duration-200',
+      interactive: 'cursor-pointer hover:shadow-circle-lg hover:scale-[1.02] transition-all duration-200',
     },
     button: {
-      primary: 'bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-      secondary: 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200',
-      success: 'bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200',
-      warning: 'bg-yellow-600 hover:bg-yellow-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200',
-      danger: 'bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200',
-      ghost: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium px-4 py-2 rounded-lg transition-colors duration-200',
+      primary: 'bg-gradient-to-r from-purple-500 to-primary-600 hover:from-purple-600 hover:to-primary-700 text-white font-medium px-6 py-3 rounded-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-circle hover:shadow-circle-lg transform hover:scale-105',
+      secondary: 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium px-6 py-3 rounded-2xl transition-all duration-200 shadow-circle',
+      success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium px-6 py-3 rounded-2xl transition-all duration-200 shadow-circle hover:shadow-circle-lg transform hover:scale-105',
+      warning: 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-medium px-6 py-3 rounded-2xl transition-all duration-200 shadow-circle hover:shadow-circle-lg transform hover:scale-105',
+      danger: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium px-6 py-3 rounded-2xl transition-all duration-200 shadow-circle hover:shadow-circle-lg transform hover:scale-105',
+      ghost: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium px-6 py-3 rounded-2xl transition-all duration-200 shadow-circle',
     },
     input: {
-      base: 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200',
+      base: 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 shadow-circle',
       error: 'border-red-500 focus:ring-red-500',
       success: 'border-green-500 focus:ring-green-500',
     },

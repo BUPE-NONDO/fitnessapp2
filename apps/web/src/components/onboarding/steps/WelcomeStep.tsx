@@ -59,9 +59,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         {/* Hero Image/Illustration */}
         <div className="mb-8">
           <div className="relative mx-auto w-64 h-64 md:w-80 md:h-80">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full opacity-20 animate-pulse"></div>
-            <div className="absolute inset-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full opacity-30 animate-pulse delay-75"></div>
-            <div className="absolute inset-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-full opacity-40 animate-pulse delay-150"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-primary-500 rounded-full opacity-20 animate-pulse"></div>
+            <div className="absolute inset-4 bg-gradient-to-r from-purple-500 to-primary-600 rounded-full opacity-30 animate-pulse delay-75"></div>
+            <div className="absolute inset-8 bg-gradient-to-r from-purple-600 to-primary-700 rounded-full opacity-40 animate-pulse delay-150"></div>
             <div className="absolute inset-0 flex items-center justify-center text-6xl md:text-8xl">
               💪
             </div>
@@ -71,7 +71,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         {/* CTA Button */}
         <button
           onClick={onNext}
-          className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-xl hover:shadow-2xl"
+          className="inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-primary-600 rounded-2xl hover:from-purple-700 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-circle-lg hover:shadow-glow"
         >
           Start Your 2-Minute Quiz
           <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         {stats.map((stat, index) => (
           <div key={index} className="text-center">
-            <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
               {stat.number}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">

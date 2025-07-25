@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { OnboardingData } from '../OnboardingWizard';
 
 const STORAGE_KEY = 'fitness-app-onboarding-progress';
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 9;
 
 interface OnboardingFlowState {
   currentStep: number;
@@ -59,13 +59,10 @@ export function useOnboardingFlow(initialData?: Partial<OnboardingData>) {
       case 6: // Progress preview (loading step)
         return true;
       
-      case 7: // Plan summary
-        return !!data.personalizedPlan;
-      
-      case 8: // Subscription
-        return !!data.selectedPlan;
-      
-      case 9: // Completion
+      case 7: // Plan summary (free plan generation)
+        return !!data.generatedPlan;
+
+      case 8: // Completion
         return true;
       
       default:
@@ -172,7 +169,8 @@ export function useOnboardingFlow(initialData?: Partial<OnboardingData>) {
     const plan = createPersonalizedPlan(data);
     
     updateData({
-      personalizedPlan: plan,
+      generatedPlan: plan,
+      workoutPlan: plan, // Also store for compatibility
     });
   };
 

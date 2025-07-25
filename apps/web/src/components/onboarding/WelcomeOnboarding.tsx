@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { OnboardingWizard, OnboardingData } from './OnboardingWizard';
-import { ModernOnboardingFlow } from './ModernOnboardingFlow';
 import { OnboardingIntro } from './OnboardingIntro';
-import { PersonalizedOnboardingFunnel } from './PersonalizedOnboardingFunnel';
 import { useUser } from '@/hooks/useUser';
 
 interface WelcomeOnboardingProps {
@@ -23,31 +21,16 @@ export function WelcomeOnboarding({
   const { userProfile } = useUser();
   const [showIntro, setShowIntro] = useState(true);
   const [showWizard, setShowWizard] = useState(false);
-  const [showModernFlow, setShowModernFlow] = useState(false);
-  const [showPersonalizedFunnel, setShowPersonalizedFunnel] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
 
   if (!isOpen) return null;
 
   const handleIntroStart = () => {
     setShowIntro(false);
-    setShowPersonalizedFunnel(true);
-  };
-
-  const handleIntroSkip = async () => {
-    setShowIntro(false);
-    await handleSkip();
-  };
-
-  const handleGetStarted = () => {
-    setShowModernFlow(true);
-  };
-
-  const handleUseClassicFlow = () => {
     setShowWizard(true);
   };
 
-  const handleSkip = async () => {
+  const handleIntroSkip = async () => {
     try {
       setIsSkipping(true);
       await onSkip();
@@ -62,8 +45,6 @@ export function WelcomeOnboarding({
     try {
       await onComplete(data);
       setShowWizard(false);
-      setShowModernFlow(false);
-      setShowPersonalizedFunnel(false);
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
       // Keep wizard open on error
@@ -72,8 +53,6 @@ export function WelcomeOnboarding({
 
   const handleWizardExit = () => {
     setShowWizard(false);
-    setShowModernFlow(false);
-    setShowPersonalizedFunnel(false);
     setShowIntro(true);
     onClose();
   };
@@ -90,33 +69,7 @@ export function WelcomeOnboarding({
     );
   }
 
-  // Show personalized onboarding funnel
-  if (showPersonalizedFunnel) {
-    return (
-      <PersonalizedOnboardingFunnel
-        isOpen={true}
-        onComplete={handleWizardComplete}
-        onSkip={onSkip}
-        onClose={handleWizardExit}
-        isLoading={isLoading}
-      />
-    );
-  }
-
-  // Show modern onboarding flow
-  if (showModernFlow) {
-    return (
-      <ModernOnboardingFlow
-        isOpen={true}
-        onComplete={handleWizardComplete}
-        onSkip={onSkip}
-        onClose={handleWizardExit}
-        isLoading={isLoading}
-      />
-    );
-  }
-
-  // Show classic onboarding wizard
+  // Show onboarding wizard
   if (showWizard) {
     return (
       <OnboardingWizard
@@ -131,7 +84,10 @@ export function WelcomeOnboarding({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-blue-500 to-purple-600 text-white p-8 rounded-t-2xl">
+        <div className="relative bg-gradient-to-br from-purple-500 to-primary-600 text-white p-8 rounded-t-2xl overflow-hidden">
+          {/* Circle decorations */}
+          <div className="absolute top-4 right-4 w-16 h-16 bg-white/10 rounded-full"></div>
+          <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/20 rounded-full"></div>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -228,7 +184,7 @@ export function WelcomeOnboarding({
               <button
                 onClick={handleIntroStart}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg"
+                className="w-full bg-gradient-to-r from-purple-500 to-primary-600 hover:from-purple-600 hover:to-primary-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg shadow-circle hover:shadow-circle-lg"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -241,7 +197,7 @@ export function WelcomeOnboarding({
                 ) : (
                   <>
                     <span className="mr-2">🚀</span>
-                    Start Your 1-Minute Quiz
+                    Start Your FREE Fitness Plan
                   </>
                 )}
               </button>

@@ -1,15 +1,15 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
   getDoc,
-  query, 
-  where, 
+  query,
+  where,
   orderBy,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CreateGoal, Goal } from '@fitness-app/shared';
@@ -24,6 +24,8 @@ export class GoalService {
     try {
       console.log('Creating goal:', { userId, goalData });
 
+      // User data isolation is handled by Firestore security rules
+
       const goalToCreate = {
         ...goalData,
         userId,
@@ -33,7 +35,7 @@ export class GoalService {
       };
 
       const docRef = await addDoc(collection(db, this.collectionName), goalToCreate);
-      
+
       console.log('Goal created with ID:', docRef.id);
 
       const createdGoal: Goal = {
@@ -165,6 +167,48 @@ export class GoalService {
     } catch (error) {
       console.error('Error toggling goal status:', error);
       throw new Error(`Failed to toggle goal status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get goals for fresh users (returns empty array for new users)
+   */
+  async getFreshUserGoals(userId: string): Promise<Goal[]> {
+    try {
+      // Check if user is fresh
+      const isUserFresh = await UserDataInitializationService.isUserFresh(userId);
+      if (isUserFresh) {
+        console.log('🆕 User is fresh, returning empty goals array');
+        return [];
+      }
+
+      // Return regular goals for established users
+      return await this.getUserGoals(userId);
+    } catch (error) {
+      console.error('Error getting fresh user goals:', error);
+      return []; // Return empty array on error for fresh users
+    }
+  }
+
+  /**
+   * Validate that user has no existing goals (for fresh users)
+   */
+  async validateFreshUserGoals(userId: string): Promise<{
+    isFresh: boolean;
+    goalCount: number;
+  }> {
+    try {
+      const goals = await this.getUserGoals(userId);
+      return {
+        isFresh: goals.length === 0,
+        goalCount: goals.length,
+      };
+    } catch (error) {
+      console.error('Error validating fresh user goals:', error);
+      return {
+        isFresh: true,
+        goalCount: 0,
+      };
     }
   }
 }

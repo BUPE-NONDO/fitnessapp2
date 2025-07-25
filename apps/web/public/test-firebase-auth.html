@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Authentication Test</h1>
+        <p>Test Firebase authentication for FitnessApp</p>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="test@example.com" placeholder="Enter test email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="testpassword123" placeholder="Enter test password">
+        </div>
+
+        <div class="form-group">
+            <label for="name">Display Name:</label>
+            <input type="text" id="name" value="Test User" placeholder="Enter display name">
+        </div>
+
+        <button onclick="testSignUp()">🆕 Test Sign Up</button>
+        <button onclick="testSignIn()">🔐 Test Sign In</button>
+        <button onclick="testSignOut()">🚪 Test Sign Out</button>
+        <button onclick="getCurrentUser()">👤 Get Current User</button>
+        <button onclick="clearResults()">🧹 Clear Results</button>
+
+        <div id="status" class="status info">
+            Ready to test Firebase authentication...
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword,
+            signOut,
+            updateProfile,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGhmmERHqlE_6f2jFAALXiQFrtpy5fims",
+            authDomain: "fitness-app-bupe-staging.firebaseapp.com",
+            projectId: "fitness-app-bupe-staging",
+            storageBucket: "fitness-app-bupe-staging.firebasestorage.app",
+            messagingSenderId: "717122355693",
+            appId: "1:717122355693:web:7b224927c57a2cc10b67e4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ User signed in:', user.uid);
+                updateStatus(`User signed in: ${user.email}`, 'success');
+            } else {
+                console.log('🔓 User signed out');
+                updateStatus('User signed out', 'info');
+            }
+        });
+
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function addResult(title, data, type = 'info') {
+            const resultsEl = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultsEl.appendChild(resultDiv);
+        }
+
+        // Make functions global
+        window.testSignUp = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+
+            try {
+                updateStatus('Creating user account...', 'info');
+                console.log('🔐 Attempting to create user:', email);
+
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Update display name
+                if (name) {
+                    await updateProfile(user, { displayName: name });
+                }
+
+                console.log('✅ User created successfully:', user.uid);
+                updateStatus('User created successfully!', 'success');
+                
+                addResult('Sign Up Success', {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    emailVerified: user.emailVerified,
+                    creationTime: user.metadata.creationTime,
+                    lastSignInTime: user.metadata.lastSignInTime
+                }, 'success');
+
+            } catch (error) {
+                console.error('❌ Sign up error:', error);
+                updateStatus(`Sign up failed: ${error.message}`, 'error');
+                
+                addResult('Sign Up Error', {
+                    code: error.code,
+                    message: error.message,
+                    details: error.customData || 'No additional details'
+                }, 'error');
+            }
+        };
+
+        window.testSignIn = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                updateStatus('Signing in...', 'info');
+                console.log('🔐 Attempting to sign in:', email);
+
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                console.log('✅ Sign in successful:', user.uid);
+                updateStatus('Sign in successful!', 'success');
+                
+                addResult('Sign In Success', {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    emailVerified: user.emailVerified,
+                    lastSignInTime: user.metadata.lastSignInTime
+                }, 'success');
+
+            } catch (error) {
+                console.error('❌ Sign in error:', error);
+                updateStatus(`Sign in failed: ${error.message}`, 'error');
+                
+                addResult('Sign In Error', {
+                    code: error.code,
+                    message: error.message,
+                    details: error.customData || 'No additional details'
+                }, 'error');
+            }
+        };
+
+        window.testSignOut = async function() {
+            try {
+                updateStatus('Signing out...', 'info');
+                await signOut(auth);
+                console.log('✅ Sign out successful');
+                updateStatus('Sign out successful!', 'success');
+                addResult('Sign Out Success', { message: 'User signed out successfully' }, 'success');
+            } catch (error) {
+                console.error('❌ Sign out error:', error);
+                updateStatus(`Sign out failed: ${error.message}`, 'error');
+                addResult('Sign Out Error', { code: error.code, message: error.message }, 'error');
+            }
+        };
+
+        window.getCurrentUser = function() {
+            const user = auth.currentUser;
+            if (user) {
+                console.log('👤 Current user:', user.uid);
+                updateStatus('Current user retrieved', 'success');
+                addResult('Current User', {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    emailVerified: user.emailVerified,
+                    photoURL: user.photoURL,
+                    creationTime: user.metadata.creationTime,
+                    lastSignInTime: user.metadata.lastSignInTime
+                }, 'success');
+            } else {
+                console.log('👤 No current user');
+                updateStatus('No user currently signed in', 'info');
+                addResult('Current User', { message: 'No user currently signed in' }, 'info');
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+            updateStatus('Results cleared', 'info');
+        };
+
+        console.log('🔥 Firebase Auth Test initialized');
+        updateStatus('Firebase Auth Test ready', 'success');
+    </script>
+</body>
+</html>
