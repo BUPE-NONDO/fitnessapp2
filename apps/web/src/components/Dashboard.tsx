@@ -12,6 +12,7 @@ import { OnboardingWizard } from './onboarding/OnboardingWizard';
 import { WorkoutRoutineComponent } from './workout/WorkoutRoutine';
 import { DailyCheckIn } from './workout/DailyCheckIn';
 import { WorkoutPlanDebug } from './debug/WorkoutPlanDebug';
+import { CompleteDataReset } from './admin/CompleteDataReset';
 import { Icon } from './ui/Icon';
 import { ThemeToggle } from '@/contexts/ThemeContext';
 import Container from './ui/Container';
@@ -193,7 +194,12 @@ export function Dashboard() {
             {activeTab === 'logs' && <ActivityLogsList />}
             {activeTab === 'badges' && <BadgeSystem />}
             {activeTab === 'profile' && <UserProfile />}
-            {activeTab === 'debug' && <WorkoutPlanDebug />}
+            {activeTab === 'debug' && (
+              <div className="space-y-8">
+                <WorkoutPlanDebug />
+                <CompleteDataReset />
+              </div>
+            )}
           </div>
         </Container>
       </main>

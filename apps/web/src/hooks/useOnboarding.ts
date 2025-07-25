@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useUser } from './useUser';
 import { useGoals } from './useTRPC';
 import { OnboardingData } from '@/components/onboarding/OnboardingWizard';
+import { UserFlowService } from '@/services/userFlowService';
 import { IsolatedOnboardingService } from '@/services/isolatedOnboardingService';
 import { ExerciseDatabase } from '@/services/exerciseDatabase';
 
@@ -68,16 +69,9 @@ export function useOnboarding(): UseOnboardingReturn {
         console.warn('⚠️ Exercise database already initialized or failed to initialize:', error);
       }
 
-      // Start onboarding if not already started
-      try {
-        await IsolatedOnboardingService.startOnboarding(user.uid);
-      } catch (error) {
-        console.warn('⚠️ Onboarding already started or failed to start:', error);
-      }
-
-      // Complete onboarding using isolated service
-      console.log('🏋️ Completing onboarding with isolated service...');
-      await IsolatedOnboardingService.completeOnboarding(user.uid, data);
+      // Complete onboarding using user flow service
+      console.log('🏋️ Completing onboarding with user flow service...');
+      await UserFlowService.completeOnboardingStep(user.uid, data);
 
       // Update local user profile to reflect completion
       await updateProfile({

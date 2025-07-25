@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { UserDataCleanupService } from '@/services/userDataCleanupService';
-import { IsolatedOnboardingService } from '@/services/isolatedOnboardingService';
+import { UserFlowService } from '@/services/userFlowService';
 
 export interface UserProfile {
   uid: string;
@@ -195,30 +194,19 @@ export function useUser(): UseUserReturn {
           photoURL: firebaseUser.photoURL,
         };
 
-        // Create simple user profile without cleanup service
+        // Create fresh user with complete isolated data bucket
         try {
-          console.log('🆕 Creating simple user profile...');
+          console.log('🆕 Creating fresh user with complete data bucket...');
 
-          const basicUserData = {
-            uid: firebaseUser.uid,
+          await UserFlowService.initializeFreshUser(firebaseUser.uid, {
             email: firebaseUser.email || '',
             displayName: firebaseUser.displayName || '',
             photoURL: firebaseUser.photoURL || null,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            onboardingCompleted: false,
-            isNewUser: true,
-            dataInitialized: true,
-          };
+          });
 
-          await setDoc(userDocRef, basicUserData);
-
-          // Initialize isolated onboarding
-          await IsolatedOnboardingService.initializeOnboarding(firebaseUser.uid);
-
-          console.log('✅ Simple user profile created successfully');
+          console.log('✅ Fresh user created with complete isolated data bucket');
         } catch (createError) {
-          console.error('❌ Failed to create user profile:', createError);
+          console.error('❌ Failed to create fresh user:', createError);
           throw new Error('Failed to create user profile');
         }
 

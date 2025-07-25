@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUser } from '@/hooks/useUser';
-import { useOnboarding } from '@/hooks/useOnboarding';
 import { LoginForm } from '@/components/LoginForm';
-import { Dashboard } from '@/components/Dashboard';
 import { TRPCProvider } from '@/components/TRPCProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { RequireAuth } from '@/components/RequireAuth';
 import { AchievementManager, CelebrationTrigger } from '@/components/AchievementManager';
-import { WelcomeOnboarding } from '@/components/onboarding/WelcomeOnboarding';
-
-import { LoginSuccessTransition } from '@/components/LoginSuccessTransition';
+import { UserFlowManager, FlowStateIndicator } from '@/components/flow/UserFlowManager';
 import { SplashScreen } from '@/components/SplashScreen';
-import { OnboardingCelebration } from '@/components/celebrations/AchievementCelebration';
 import { AdminApp } from '@/components/admin/AdminApp';
 import { ThemeToggle } from '@/contexts/ThemeContext';
 
@@ -31,9 +25,10 @@ function App() {
 }
 
 function AppContent() {
-  const { user, loading, justLoggedIn, clearJustLoggedIn } = useAuth();
-  const { userProfile } = useUser();
+  const { user, loading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [currentRoute, setCurrentRoute] = useState<'app' | 'admin'>('app');
 
   // Force fresh start - clear any cached data on app load
   React.useEffect(() => {
@@ -45,66 +40,9 @@ function AppContent() {
     sessionStorage.clear();
     console.log('🧹 Cleared cached data for fresh start');
   }, []);
-  const [showLoginTransition, setShowLoginTransition] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
-  const [showPostSignupOnboarding, setShowPostSignupOnboarding] = useState(false);
-  const [showOnboardingCelebration, setShowOnboardingCelebration] = useState(false);
-  const [currentRoute, setCurrentRoute] = useState<'app' | 'admin'>('app');
-
-  // Onboarding state
-  const {
-    isOnboardingOpen,
-    setIsOnboardingOpen,
-    completeOnboarding,
-    skipOnboarding,
-    isLoading: onboardingLoading,
-  } = useOnboarding();
-
-  const closeOnboarding = () => setIsOnboardingOpen(false);
-
-  // Handle post-signup onboarding for new users
-  React.useEffect(() => {
-    if (justLoggedIn && user && userProfile) {
-      // Check if this is a new user (just signed up)
-      const isNewUser = !userProfile.onboardingCompleted;
-      const wasSignUp = sessionStorage.getItem('was-signup') === 'true';
-
-      if (isNewUser && wasSignUp) {
-        // Clear the signup flag
-        sessionStorage.removeItem('was-signup');
-        // Show post-signup onboarding instead of regular onboarding
-        setShowPostSignupOnboarding(true);
-        clearJustLoggedIn();
-      } else if (justLoggedIn && !isOnboardingOpen) {
-        // Regular login - show transition
-        setShowLoginTransition(true);
-      }
-    }
-  }, [justLoggedIn, user, userProfile, isOnboardingOpen, clearJustLoggedIn]);
-
-  const handleLoginTransitionComplete = () => {
-    setShowLoginTransition(false);
-    clearJustLoggedIn();
-  };
 
   const handleSplashComplete = () => {
     setShowSplash(false);
-  };
-
-  const handlePostSignupOnboardingComplete = () => {
-    setShowPostSignupOnboarding(false);
-    setShowOnboardingCelebration(true);
-    // Mark onboarding as completed in user profile
-    // This would typically update the user profile via API
-  };
-
-  const handlePostSignupOnboardingSkip = () => {
-    setShowPostSignupOnboarding(false);
-    // Still mark as completed but without celebration
-  };
-
-  const handleOnboardingCelebrationClose = () => {
-    setShowOnboardingCelebration(false);
   };
 
   // Check for admin route
@@ -117,11 +55,7 @@ function AppContent() {
     }
   }, []);
 
-  // Handle route changes
-  const handleRouteChange = (route: 'app' | 'admin') => {
-    setCurrentRoute(route);
-    window.history.pushState({}, '', route === 'admin' ? '/admin' : '/');
-  };
+
 
   // Show splash screen on initial load
   if (showSplash) {
@@ -153,33 +87,10 @@ function AppContent() {
   if (user) {
     return (
       <RequireAuth>
-        <Dashboard />
+        <UserFlowManager />
         <AchievementManager />
         <CelebrationTrigger />
-
-        {/* Login Success Transition */}
-        <LoginSuccessTransition
-          isVisible={showLoginTransition}
-          onComplete={handleLoginTransitionComplete}
-        />
-
-        {/* Post-Login Onboarding */}
-        <WelcomeOnboarding
-          isOpen={isOnboardingOpen}
-          onComplete={completeOnboarding}
-          onSkip={skipOnboarding}
-          onClose={closeOnboarding}
-          isLoading={onboardingLoading}
-        />
-
-
-
-        {/* Onboarding Completion Celebration */}
-        <OnboardingCelebration
-          isVisible={showOnboardingCelebration}
-          onClose={handleOnboardingCelebrationClose}
-          userName={userProfile?.displayName}
-        />
+        <FlowStateIndicator />
       </RequireAuth>
     );
   }

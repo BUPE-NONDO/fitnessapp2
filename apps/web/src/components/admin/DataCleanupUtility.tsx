@@ -35,13 +35,22 @@ export function DataCleanupUtility() {
       return;
     }
 
+    if (!window.confirm('This will delete ALL users, workout plans, goals, and subcollections. Continue?')) {
+      return;
+    }
+
     try {
       setIsLoading(true);
+      console.log('🗑️ Starting complete data cleanup...');
+
       await UserDataCleanupService.deleteAllUserData();
+
       setLastCleanup(new Date());
       setConfirmText('');
       await loadStats(); // Reload stats after cleanup
-      alert('All user data has been deleted successfully');
+
+      console.log('✅ Complete data cleanup finished');
+      alert('All user data has been deleted successfully. Database is now clean for fresh users.');
     } catch (error) {
       console.error('Failed to delete all data:', error);
       alert('Failed to delete data: ' + (error instanceof Error ? error.message : 'Unknown error'));

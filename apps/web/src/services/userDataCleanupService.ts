@@ -30,31 +30,63 @@ export class UserDataCleanupService {
   static async deleteAllUserData(): Promise<void> {
     try {
       console.log('🗑️ Starting complete user data cleanup...');
-      
-      const batch = writeBatch(db);
+
       let deleteCount = 0;
 
-      // Delete from all main collections
+      // Delete from all main collections in batches
       for (const collectionName of this.COLLECTIONS_TO_CLEAN) {
         console.log(`🧹 Cleaning collection: ${collectionName}`);
-        
+
         const collectionRef = collection(db, collectionName);
         const snapshot = await getDocs(collectionRef);
-        
-        snapshot.docs.forEach((docSnapshot) => {
-          batch.delete(docSnapshot.ref);
-          deleteCount++;
-        });
+
+        // Process in batches of 500 (Firestore limit)
+        const docs = snapshot.docs;
+        for (let i = 0; i < docs.length; i += 500) {
+          const batch = writeBatch(db);
+          const batchDocs = docs.slice(i, i + 500);
+
+          batchDocs.forEach((docSnapshot) => {
+            batch.delete(docSnapshot.ref);
+            deleteCount++;
+          });
+
+          await batch.commit();
+          console.log(`  ✅ Deleted batch of ${batchDocs.length} documents from ${collectionName}`);
+        }
       }
 
-      // Commit all deletions
-      await batch.commit();
-      
-      console.log(`✅ Deleted ${deleteCount} documents from ${this.COLLECTIONS_TO_CLEAN.length} collections`);
-      
+      // Also clean up any user subcollections
+      console.log('🧹 Cleaning user subcollections...');
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        const subcollections = [
+          'onboarding', 'progress', 'workout_plans', 'workout_sessions',
+          'goals', 'activity_logs', 'achievements', 'preferences'
+        ];
+
+        for (const subcollectionName of subcollections) {
+          const subcollectionRef = collection(db, 'users', userId, subcollectionName);
+          const subcollectionSnapshot = await getDocs(subcollectionRef);
+
+          if (!subcollectionSnapshot.empty) {
+            const batch = writeBatch(db);
+            subcollectionSnapshot.docs.forEach((doc) => {
+              batch.delete(doc.ref);
+              deleteCount++;
+            });
+            await batch.commit();
+          }
+        }
+      }
+
+      console.log(`✅ Deleted ${deleteCount} total documents from all collections and subcollections`);
+
       // Log the cleanup action
       await this.logCleanupAction(deleteCount);
-      
+
     } catch (error) {
       console.error('❌ Failed to delete all user data:', error);
       throw new Error(`Failed to cleanup user data: ${error instanceof Error ? error.message : 'Unknown error'}`);
