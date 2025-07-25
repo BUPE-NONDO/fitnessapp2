@@ -15,8 +15,17 @@ export function PlanSummaryStep({ data, onUpdate, onNext }: PlanSummaryStepProps
   const [isGenerating, setIsGenerating] = useState(true);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
 
-  // Generate free workout plan based on user data
+  // Generate free workout plan based on user data (only once)
   useEffect(() => {
+    // Only generate if we don't already have a plan
+    if (generatedPlan || data.generatedPlan) {
+      setIsGenerating(false);
+      if (data.generatedPlan && !generatedPlan) {
+        setGeneratedPlan(data.generatedPlan);
+      }
+      return;
+    }
+
     const generateFreePlan = async () => {
       setIsGenerating(true);
 
@@ -36,7 +45,7 @@ export function PlanSummaryStep({ data, onUpdate, onNext }: PlanSummaryStepProps
     };
 
     generateFreePlan();
-  }, [data, onUpdate]);
+  }, []); // Remove dependencies to prevent infinite loop
 
   const createPersonalizedPlan = (userData: OnboardingData) => {
     const goal = userData.primaryGoal || 'general-fitness';
