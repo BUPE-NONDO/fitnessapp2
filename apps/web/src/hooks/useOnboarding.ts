@@ -92,19 +92,22 @@ export function useOnboarding(): UseOnboardingReturn {
   }, [user, updateProfile]);
 
   /**
-   * Save onboarding progress (for auto-save)
+   * Save onboarding progress (for auto-save) - DISABLED to prevent infinite loops
    */
   const saveOnboardingProgress = useCallback(async (data: OnboardingData) => {
     if (!user) {
       return;
     }
 
-    try {
-      await IsolatedOnboardingService.updateOnboardingProgress(user.uid, data.currentStep || 1, data);
-    } catch (err) {
-      console.error('❌ Error saving onboarding progress:', err);
-      // Don't throw here as this is auto-save
-    }
+    // DISABLED: Prevent infinite loops during completion
+    console.log(`🚫 saveOnboardingProgress DISABLED for step ${data.currentStep} to prevent infinite loops`);
+
+    // try {
+    //   await IsolatedOnboardingService.updateOnboardingProgress(user.uid, data.currentStep || 1, data);
+    // } catch (err) {
+    //   console.error('❌ Error saving onboarding progress:', err);
+    //   // Don't throw here as this is auto-save
+    // }
   }, [user]);
 
   /**

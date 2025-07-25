@@ -124,28 +124,17 @@ export function OnboardingWizard({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  // Auto-save progress periodically using isolated service (disabled during completion)
+  // Auto-save COMPLETELY DISABLED to prevent infinite loops during completion
+  // TODO: Re-enable with better logic after fixing completion flow
   useEffect(() => {
-    // Don't auto-save if we're in the completion process, loading, or on final steps (8-9)
-    if (isLoading || isCompleting || currentStep >= 8) {
-      console.log(`🚫 Auto-save disabled: isLoading=${isLoading}, isCompleting=${isCompleting}, currentStep=${currentStep}`);
-      return;
-    }
+    console.log(`🚫 Auto-save COMPLETELY DISABLED to prevent infinite loops`);
+    console.log(`Current step: ${currentStep}, isLoading: ${isLoading}, isCompleting: ${isCompleting}`);
 
-    const interval = setInterval(async () => {
-      if (user && data && currentStep > 0 && currentStep < 8 && !isLoading && !isCompleting) {
-        try {
-          console.log(`💾 Auto-saving progress for step ${currentStep}`);
-          await IsolatedOnboardingService.updateOnboardingProgress(user.uid, currentStep, data);
-          saveProgress(); // Also save to localStorage
-        } catch (error) {
-          console.warn('Failed to save onboarding progress:', error);
-        }
-      }
-    }, 30000); // Save every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [user, data, currentStep, saveProgress, isLoading, isCompleting]);
+    // Completely disable auto-save for now
+    return () => {
+      // No interval to clear
+    };
+  }, [currentStep, isLoading, isCompleting]);
 
   const handleNext = async () => {
     if (!canGoNext || isTransitioning) return;
@@ -185,14 +174,17 @@ export function OnboardingWizard({
   const handleStepUpdate = async (stepData: Partial<OnboardingData>) => {
     updateData(stepData);
 
-    // Save progress to isolated service
-    if (user && currentStep > 0) {
-      try {
-        await IsolatedOnboardingService.updateOnboardingProgress(user.uid, currentStep, { ...data, ...stepData });
-      } catch (error) {
-        console.warn('Failed to save step progress:', error);
-      }
-    }
+    // DISABLED: Save progress to isolated service to prevent infinite loops
+    // TODO: Re-enable with better logic after fixing completion flow
+    console.log(`🚫 Step progress save DISABLED for step ${currentStep} to prevent infinite loops`);
+
+    // if (user && currentStep > 0) {
+    //   try {
+    //     await IsolatedOnboardingService.updateOnboardingProgress(user.uid, currentStep, { ...data, ...stepData });
+    //   } catch (error) {
+    //     console.warn('Failed to save step progress:', error);
+    //   }
+    // }
   };
 
   // Get current step component with bounds checking
