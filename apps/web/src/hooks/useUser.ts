@@ -195,22 +195,30 @@ export function useUser(): UseUserReturn {
           photoURL: firebaseUser.photoURL,
         };
 
-        // Create fresh user with isolated subcollection structure
+        // Create simple user profile without cleanup service
         try {
-          console.log('🆕 Creating fresh user with isolated structure...');
+          console.log('🆕 Creating simple user profile...');
 
-          await UserDataCleanupService.createFreshUser(firebaseUser.uid, {
+          const basicUserData = {
+            uid: firebaseUser.uid,
             email: firebaseUser.email || '',
             displayName: firebaseUser.displayName || '',
             photoURL: firebaseUser.photoURL || null,
-          });
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            onboardingCompleted: false,
+            isNewUser: true,
+            dataInitialized: true,
+          };
+
+          await setDoc(userDocRef, basicUserData);
 
           // Initialize isolated onboarding
           await IsolatedOnboardingService.initializeOnboarding(firebaseUser.uid);
 
-          console.log('✅ Fresh user created with isolated subcollection structure');
+          console.log('✅ Simple user profile created successfully');
         } catch (createError) {
-          console.error('❌ Failed to create fresh user:', createError);
+          console.error('❌ Failed to create user profile:', createError);
           throw new Error('Failed to create user profile');
         }
 

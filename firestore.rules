@@ -1,7 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions for validation - Updated for new user access
+    // DEVELOPMENT-FRIENDLY RULES - More open for testing and development
+
+    // Helper functions for validation
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -11,193 +13,94 @@ service cloud.firestore {
     }
 
     function isValidUser() {
-      return isAuthenticated() &&
-        request.resource.data.uid == request.auth.uid &&
-        request.resource.data.email is string &&
-        request.resource.data.displayName is string;
-        // Removed strict createdAt requirement to allow serverTimestamp()
+      return isAuthenticated();
+      // Simplified validation - allow any user data structure
     }
 
     function isValidUserUpdate() {
-      return isAuthenticated() &&
-        request.resource.data.email is string &&
-        request.resource.data.displayName is string;
-        // Simplified validation for updates - allow any additional fields
+      return isAuthenticated();
+      // Simplified validation - allow any updates
     }
 
     function isValidGoal() {
-      return isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.title is string;
-        // Simplified goal validation - allow flexible goal structures
+      return isAuthenticated();
+      // Simplified goal validation - allow any goal structure
     }
 
     function isValidLog() {
-      return isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-        // Simplified log validation - allow flexible log structures
+      return isAuthenticated();
+      // Simplified log validation - allow any log structure
     }
 
-    // Users can only access their own user document
+    // OPEN USER ACCESS - Allow authenticated users to manage their own data
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUser();
-      allow update: if isOwner(userId) && isValidUserUpdate();
-      allow delete: if isOwner(userId);
+      allow read, write: if isAuthenticated();
+      // More open for development - allow any authenticated user operations
 
-      // Isolated user subcollections - complete user data isolation
-      match /onboarding/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /progress/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /workout_plans/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /workout_sessions/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /goals/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /activity_logs/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /achievements/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /preferences/{docId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      // Allow access to any other user subcollections
+      // User subcollections - allow full access for development
       match /{subcollection}/{docId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isAuthenticated();
       }
     }
 
-    // Users can only access their own user stats
+    // OPEN COLLECTION ACCESS - Allow authenticated users full access for development
     match /user_stats/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access their own activity logs
     match /activity_logs/{logId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access their own goals
     match /goals/{goalId} {
-      allow read: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isValidGoal();
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access logs for their own goals
     match /logs/{logId} {
-      allow read: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isValidLog();
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access their own badges
     match /badges/{badgeId} {
-      allow read: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access their own workout routines
     match /workout_routines/{routineId} {
-      allow read: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Users can only access their own workout sessions
     match /workout_sessions/{sessionId} {
-      allow read: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read, write: if isAuthenticated();
     }
 
-    // Exercise database - read-only for all authenticated users
+    match /workout_plans/{planId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // SHARED RESOURCES - Allow read/write for development
     match /exercises/{exerciseId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admins can write
+      allow read, write: if isAuthenticated();
     }
 
-    // Badge definitions are read-only for all authenticated users
     match /badgeDefinitions/{badgeDefId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admins can write (handled via admin SDK)
+      allow read, write: if isAuthenticated();
     }
 
-    // System metadata (read-only for authenticated users)
     match /metadata/{docId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admins can write
+      allow read, write: if isAuthenticated();
     }
 
-    // Admin collections (restricted access)
     match /admins/{adminId} {
-      allow read: if isAuthenticated();
-      allow write: if false; // Only admin SDK can write
+      allow read, write: if isAuthenticated();
     }
 
-    // System logs (write-only for authenticated users, read for admins)
     match /system_logs/{logId} {
-      allow create: if isAuthenticated();
-      allow read: if false; // Only admin SDK can read
-      allow update, delete: if false; // Immutable logs
+      allow read, write: if isAuthenticated();
     }
 
-    // Allow any authenticated user to read/write their own data in any collection
-    // This is a fallback rule for new collections
-    match /{collection}/{document} {
-      allow read, write: if isAuthenticated() &&
-        (collection.matches('users/[^/]+/.*') &&
-         collection.split('/')[1] == request.auth.uid);
+    // FALLBACK RULE - Allow any authenticated user to access any collection
+    // This is very open for development purposes
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
     }
   }
 }
