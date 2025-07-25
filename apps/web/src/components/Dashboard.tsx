@@ -11,6 +11,7 @@ import { BadgeSystem } from './BadgeSystem';
 import { OnboardingWizard } from './onboarding/OnboardingWizard';
 import { WorkoutRoutineComponent } from './workout/WorkoutRoutine';
 import { DailyCheckIn } from './workout/DailyCheckIn';
+import { WorkoutPlanDebug } from './debug/WorkoutPlanDebug';
 import { Icon } from './ui/Icon';
 import { ThemeToggle } from '@/contexts/ThemeContext';
 import Container from './ui/Container';
@@ -29,7 +30,7 @@ export function Dashboard() {
     triggerOnboarding,
   } = useOnboarding();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'workout' | 'checkin' | 'goals' | 'logs' | 'badges' | 'profile'>('overview'); // Start with overview tab
+  const [activeTab, setActiveTab] = useState<'overview' | 'workout' | 'checkin' | 'goals' | 'logs' | 'badges' | 'profile' | 'debug'>('overview'); // Start with overview tab
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Check if user is admin
@@ -136,6 +137,7 @@ export function Dashboard() {
               { id: 'logs', label: 'Activity Logs', icon: '📝' },
               { id: 'badges', label: 'Achievements', icon: '🏆' },
               { id: 'profile', label: 'Profile', icon: '👤' },
+              { id: 'debug', label: 'Debug', icon: '🧪' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -191,6 +193,7 @@ export function Dashboard() {
             {activeTab === 'logs' && <ActivityLogsList />}
             {activeTab === 'badges' && <BadgeSystem />}
             {activeTab === 'profile' && <UserProfile />}
+            {activeTab === 'debug' && <WorkoutPlanDebug />}
           </div>
         </Container>
       </main>

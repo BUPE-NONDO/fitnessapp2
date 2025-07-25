@@ -120,9 +120,16 @@ export class IsolatedOnboardingService {
   static async completeOnboarding(userId: string, finalData: OnboardingData): Promise<void> {
     try {
       console.log(`🎉 Completing onboarding for user: ${userId}`);
-      
+      console.log('📊 Onboarding data:', finalData);
+
+      // Generate and store workout plan FIRST (before batch operations)
+      console.log('🏋️ Generating workout plan...');
+      const workoutPlan = await WorkoutPlanGenerator.generateWorkoutPlan(userId, finalData);
+      console.log('✅ Workout plan generated:', workoutPlan.id, workoutPlan.title);
+
+      // Now update onboarding status and references
       const batch = writeBatch(db);
-      
+
       // Update onboarding status
       const onboardingRef = doc(db, 'users', userId, 'onboarding', 'current');
       batch.update(onboardingRef, {
@@ -131,11 +138,7 @@ export class IsolatedOnboardingService {
         data: finalData,
         updatedAt: serverTimestamp()
       });
-      
-      // Generate and store workout plan in user's subcollection
-      console.log('🏋️ Generating workout plan...');
-      const workoutPlan = await WorkoutPlanGenerator.generateWorkoutPlan(userId, finalData);
-      
+
       // Store workout plan reference in user's subcollection
       const workoutPlanRef = doc(db, 'users', userId, 'workout_plans', workoutPlan.id);
       batch.set(workoutPlanRef, {
@@ -151,7 +154,7 @@ export class IsolatedOnboardingService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
+
       // Update user's main profile to reflect onboarding completion
       const userRef = doc(db, 'users', userId);
       batch.update(userRef, {
@@ -159,20 +162,34 @@ export class IsolatedOnboardingService {
         currentWorkoutPlanId: workoutPlan.id,
         updatedAt: serverTimestamp()
       });
-      
-      // Update user's progress stats
+
+      // Update user's progress stats (use set with merge to create if doesn't exist)
       const progressRef = doc(db, 'users', userId, 'progress', 'stats');
-      batch.update(progressRef, {
+      batch.set(progressRef, {
         onboardingCompletedAt: serverTimestamp(),
         hasWorkoutPlan: true,
+        totalWorkouts: 0,
+        totalGoals: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivityDate: null,
+        joinDate: serverTimestamp(),
         updatedAt: serverTimestamp()
-      });
-      
+      }, { merge: true });
+
       await batch.commit();
-      
-      console.log('✅ Onboarding completed successfully with isolated data structure');
+
+      console.log('✅ Onboarding completed successfully with workout plan:', workoutPlan.id);
+      console.log('📋 Plan details:', {
+        title: workoutPlan.title,
+        goal: workoutPlan.goal,
+        workoutsPerWeek: workoutPlan.workoutsPerWeek,
+        duration: workoutPlan.duration
+      });
+
     } catch (error) {
       console.error('❌ Failed to complete onboarding:', error);
+      console.error('Error details:', error);
       throw new Error(`Failed to complete onboarding: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

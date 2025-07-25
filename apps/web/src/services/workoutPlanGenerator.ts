@@ -64,33 +64,29 @@ export class WorkoutPlanGenerator {
   static async generateWorkoutPlan(userId: string, onboardingData: OnboardingData): Promise<WorkoutPlan> {
     try {
       console.log('🏋️ Generating comprehensive workout plan for user:', userId);
+      console.log('📊 Using onboarding data:', onboardingData);
 
       // Create the workout plan
+      console.log('🔨 Creating personalized plan...');
       const workoutPlan = await this.createPersonalizedPlan(userId, onboardingData);
+      console.log('✅ Plan created:', workoutPlan.id, workoutPlan.title);
 
-      // Save to Firestore
+      // Save to main workout_plans collection
+      console.log('💾 Saving to main workout_plans collection...');
       const planDocRef = doc(db, this.COLLECTION_NAME, workoutPlan.id);
       await setDoc(planDocRef, {
         ...workoutPlan,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-
-      // Also save to user's subcollection for easy access
-      const userPlanRef = doc(db, 'users', userId, 'workout_plans', workoutPlan.id);
-      await setDoc(userPlanRef, {
-        planId: workoutPlan.id,
-        title: workoutPlan.title,
-        goal: workoutPlan.goal,
-        isActive: true,
-        createdAt: serverTimestamp(),
-      });
+      console.log('✅ Saved to main collection');
 
       console.log('✅ Workout plan generated and saved successfully');
       return workoutPlan;
 
     } catch (error) {
       console.error('❌ Failed to generate workout plan:', error);
+      console.error('Error details:', error);
       throw new Error(`Failed to generate workout plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
