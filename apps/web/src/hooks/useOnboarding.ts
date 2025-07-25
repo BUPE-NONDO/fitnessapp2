@@ -69,8 +69,12 @@ export function useOnboarding(): UseOnboardingReturn {
         console.warn('⚠️ Exercise database already initialized or failed to initialize:', error);
       }
 
-      // Complete onboarding using user flow service
-      console.log('🏋️ Completing onboarding with user flow service...');
+      // Complete onboarding using isolated service directly (more reliable)
+      console.log('🏋️ Completing onboarding with isolated service...');
+      await IsolatedOnboardingService.completeOnboarding(user.uid, data);
+
+      // Also update user flow state
+      console.log('🔄 Updating user flow state...');
       await UserFlowService.completeOnboardingStep(user.uid, data);
 
       // Update local user profile to reflect completion
