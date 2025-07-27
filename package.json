@@ -1,0 +1,32 @@
+{
+  "name": "fitness-app",
+  "version": "1.0.0",
+  "description": "A comprehensive fitness tracking application",
+  "type": "module",
+  "scripts": {
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build",
+    "preview": "cd apps/web && npm run preview",
+    "test": "cd apps/web && npm run test",
+    "lint": "cd apps/web && npm run lint",
+    "type-check": "cd apps/web && npm run type-check"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BUPE-NONDO/fitnessapp2.git"
+  },
+  "author": "Bupe Nondo <peternondo1@gmail.com>",
+  "license": "MIT"
+}
