@@ -182,5 +182,7 @@ export const getSpacing = (size: keyof typeof designSystem.spacing) => {
 };
 
 export const getColor = (color: keyof typeof designSystem.colors, shade: string) => {
-  return designSystem.colors[color]?.[shade as keyof typeof designSystem.colors[typeof color]] || '';
+  const colorObj = designSystem.colors[color];
+  if (!colorObj || typeof colorObj !== 'object') return '';
+  return (colorObj as any)[shade] || '';
 };

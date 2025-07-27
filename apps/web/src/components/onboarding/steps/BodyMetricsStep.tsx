@@ -33,17 +33,17 @@ export function BodyMetricsStep({ data, onUpdate }: BodyMetricsStepProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-3xl md:text-4xl font-bold text-black mb-4">
           Let's get your measurements
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300">
+        <p className="text-lg text-black">
           This helps us track your progress and set realistic goals.
         </p>
       </div>
 
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Current Weight (kg)
           </label>
           <input
@@ -54,13 +54,13 @@ export function BodyMetricsStep({ data, onUpdate }: BodyMetricsStepProps) {
               handleUpdate('currentWeight', parseFloat(e.target.value));
               handleUpdate('weightUnit', 'kg');
             }}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-black"
             placeholder="70"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Target Weight (kg)
           </label>
           <input
@@ -70,13 +70,13 @@ export function BodyMetricsStep({ data, onUpdate }: BodyMetricsStepProps) {
               setTargetWeight(e.target.value);
               handleUpdate('targetWeight', parseFloat(e.target.value));
             }}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-black"
             placeholder="65"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black mb-2">
             Height (cm)
           </label>
           <input
@@ -87,18 +87,18 @@ export function BodyMetricsStep({ data, onUpdate }: BodyMetricsStepProps) {
               handleUpdate('height', parseFloat(e.target.value));
               handleUpdate('heightUnit', 'cm');
             }}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-black"
             placeholder="170"
           />
         </div>
 
         {calculateBMI() && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="bg-white border border-gray-300 rounded-lg p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <div className="text-2xl font-bold text-blue-600">
                 BMI: {calculateBMI()}
               </div>
-              <div className="text-sm text-blue-800 dark:text-blue-200">
+              <div className="text-sm text-black">
                 Normal range: 18.5 - 24.9
               </div>
             </div>

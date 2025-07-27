@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/hooks/useUser';
 import { UserFlowService, UserFlowState } from '@/services/userFlowService';
+import { IsolatedOnboardingService } from '@/services/isolatedOnboardingService';
+import { ExerciseDatabase } from '@/services/exerciseDatabase';
 import { WelcomeOnboarding } from '@/components/onboarding/WelcomeOnboarding';
 import { Dashboard } from '@/components/Dashboard';
 
@@ -50,9 +52,21 @@ export function UserFlowManager({ children }: UserFlowManagerProps) {
     if (!user) return;
 
     try {
-      console.log('🎉 Onboarding completed, updating flow state...');
-      
-      // Update flow state to reflect completion
+      console.log('🎉 Onboarding completed, processing completion...');
+
+      // Initialize exercise database if needed
+      try {
+        await ExerciseDatabase.initializeExerciseDatabase();
+      } catch (error) {
+        console.warn('⚠️ Exercise database already initialized or failed to initialize:', error);
+      }
+
+      // Complete onboarding and update user flow state
+      // UserFlowService.completeOnboardingStep handles both isolated service and user profile updates
+      console.log('🔄 Updating user flow state and completing onboarding...');
+      await UserFlowService.completeOnboardingStep(user.uid, data);
+
+      // Update local flow state to reflect completion
       setFlowState(prev => prev ? {
         ...prev,
         needsOnboarding: false,
@@ -60,10 +74,11 @@ export function UserFlowManager({ children }: UserFlowManagerProps) {
         hasWorkoutPlan: true,
         currentStep: 'dashboard'
       } : null);
-      
-      console.log('✅ Flow state updated, moving to dashboard');
+
+      console.log('✅ Onboarding completion processed, moving to dashboard');
     } catch (error) {
       console.error('❌ Failed to handle onboarding completion:', error);
+      throw error; // Re-throw to let the UI handle the error
     }
   };
 
@@ -72,9 +87,12 @@ export function UserFlowManager({ children }: UserFlowManagerProps) {
     if (!user) return;
 
     try {
-      console.log('⏭️ Onboarding skipped, moving to dashboard...');
-      
-      // Update flow state
+      console.log('⏭️ Onboarding skipped, processing skip...');
+
+      // Update user flow state to mark onboarding as completed (skipped)
+      await UserFlowService.completeOnboardingStep(user.uid, { skipped: true });
+
+      // Update local flow state
       setFlowState(prev => prev ? {
         ...prev,
         needsOnboarding: false,
@@ -82,9 +100,11 @@ export function UserFlowManager({ children }: UserFlowManagerProps) {
         hasWorkoutPlan: false,
         currentStep: 'dashboard'
       } : null);
-      
+
+      console.log('✅ Onboarding skip processed, moving to dashboard');
     } catch (error) {
       console.error('❌ Failed to handle onboarding skip:', error);
+      throw error; // Re-throw to let the UI handle the error
     }
   };
 
@@ -154,33 +174,8 @@ export function UserFlowManager({ children }: UserFlowManagerProps) {
   return <Dashboard />;
 }
 
-// Flow state indicator component for debugging
+// Flow state indicator component for debugging (disabled for production)
 export function FlowStateIndicator() {
-  const { user } = useUser();
-  const [flowState, setFlowState] = useState<UserFlowState | null>(null);
-
-  useEffect(() => {
-    const loadState = async () => {
-      if (!user) return;
-      try {
-        const state = await UserFlowService.getUserFlowState(user.uid);
-        setFlowState(state);
-      } catch (error) {
-        console.error('Failed to load flow state:', error);
-      }
-    };
-    loadState();
-  }, [user]);
-
-  if (!flowState || !user) return null;
-
-  return (
-    <div className="fixed bottom-4 right-4 bg-black bg-opacity-75 text-white p-3 rounded-lg text-sm z-50">
-      <div className="font-semibold mb-1">Flow State Debug</div>
-      <div>Step: {flowState.currentStep}</div>
-      <div>New User: {flowState.isNewUser ? 'Yes' : 'No'}</div>
-      <div>Needs Onboarding: {flowState.needsOnboarding ? 'Yes' : 'No'}</div>
-      <div>Has Plan: {flowState.hasWorkoutPlan ? 'Yes' : 'No'}</div>
-    </div>
-  );
+  // Debug component disabled for production
+  return null;
 }

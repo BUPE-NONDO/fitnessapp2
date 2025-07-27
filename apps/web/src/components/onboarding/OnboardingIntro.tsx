@@ -30,13 +30,13 @@ export function OnboardingIntro({
     },
     {
       id: 'personalized',
-      title: 'Personalized Just for You',
-      subtitle: 'Get a fitness plan tailored to your goals and lifestyle',
+      title: 'Get a fitness plan tailored to your goals',
+      subtitle: 'and lifestyle',
       illustration: '🎨',
       features: [
-        { icon: '🏋️', title: 'Custom Workouts', desc: 'Exercises matched to your fitness level' },
-        { icon: '📅', title: 'Flexible Schedule', desc: 'Workouts that fit your busy lifestyle' },
-        { icon: '🎯', title: 'Goal-Oriented', desc: 'Every workout brings you closer to your goals' }
+        { icon: '🏋️', title: 'Custom Workouts', desc: 'Exercises matched to your fitness level and available equipment' },
+        { icon: '📅', title: 'Flexible Schedule', desc: 'Workouts that fit your busy lifestyle and time constraints' },
+        { icon: '🎯', title: 'Goal-Focused', desc: 'Every exercise designed to help you reach your specific goals' }
       ]
     },
     {
@@ -79,7 +79,7 @@ export function OnboardingIntro({
 
         <button
           onClick={onSkip}
-          className="px-4 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          className="px-4 py-2 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors font-medium"
         >
           Skip
         </button>
@@ -93,12 +93,17 @@ export function OnboardingIntro({
             <div className="text-8xl mb-6 animate-bounce">
               {currentSlideData.illustration}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
               {currentSlideData.title}
+              {currentSlideData.id === 'personalized' && (
+                <span className="text-purple-600 dark:text-purple-400"> {currentSlideData.subtitle}</span>
+              )}
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              {currentSlideData.subtitle}
-            </p>
+            {currentSlideData.id !== 'personalized' && (
+              <p className="text-xl text-slate-700 dark:text-slate-300 max-w-2xl mx-auto font-medium">
+                {currentSlideData.subtitle}
+              </p>
+            )}
           </div>
 
           {/* Features Grid */}
@@ -112,10 +117,10 @@ export function OnboardingIntro({
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed font-medium">
                   {feature.desc}
                 </p>
               </div>
@@ -133,7 +138,7 @@ export function OnboardingIntro({
             </button>
             <button
               onClick={onSkip}
-              className="px-8 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all duration-200"
+              className="px-8 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-800 dark:text-gray-100 font-semibold rounded-xl transition-all duration-200"
             >
               Maybe Later
             </button>
@@ -164,7 +169,7 @@ export function OnboardingIntro({
         <div className="flex justify-center mt-3">
           <button
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            className="text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors font-medium"
           >
             {isAutoPlaying ? '⏸️ Pause' : '▶️ Play'}
           </button>

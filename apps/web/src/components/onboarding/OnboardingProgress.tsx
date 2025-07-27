@@ -49,7 +49,7 @@ export function OnboardingProgress({
                   isCompleted
                     ? 'bg-green-500 text-white'
                     : isCurrent
-                    ? 'bg-blue-500 text-white ring-4 ring-blue-200 dark:ring-blue-800'
+                    ? 'bg-gradient-to-r from-cyan-500 to-violet-500 text-white ring-4 ring-cyan-300/50'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                 }`}
               >

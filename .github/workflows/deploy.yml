@@ -1,0 +1,48 @@
+name: Deploy FitnessApp
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        cd apps/web
+        npm install
+        
+    - name: Build application
+      run: |
+        cd apps/web
+        npm run build
+        
+    - name: Deploy to Firebase Hosting
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FITNESS_APP_BUPE_STAGING }}
+        channelId: live
+        projectId: fitness-app-bupe-staging
+        
+    - name: Deploy Preview to Firebase
+      if: github.event_name == 'pull_request'
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FITNESS_APP_BUPE_STAGING }}
+        projectId: fitness-app-bupe-staging

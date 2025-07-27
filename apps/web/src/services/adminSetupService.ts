@@ -260,17 +260,7 @@ export class AdminSetupService {
     }
   }
 
-  /**
-   * Setup demo data for development
-   */
-  static async setupDemoData(): Promise<void> {
-    console.log('🎭 Setting up demo data...');
-    
-    // This would typically create demo users, goals, etc.
-    // For now, we'll just log that it's available
-    
-    console.log('✅ Demo data setup complete!');
-  }
+
 
   /**
    * Check if current user can perform admin setup

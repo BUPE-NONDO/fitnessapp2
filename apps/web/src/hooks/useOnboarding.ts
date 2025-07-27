@@ -103,9 +103,11 @@ export function useOnboarding(): UseOnboardingReturn {
       return;
     }
 
-    // DISABLED: Prevent infinite loops during completion
-    console.log(`🚫 saveOnboardingProgress DISABLED for step ${data.currentStep} to prevent infinite loops`);
+    // Progress saving is handled by localStorage in useOnboardingFlow
+    console.log(`📝 Onboarding progress for step ${data.currentStep} (localStorage handles persistence)`);
 
+    // Optional: Save to Firebase for cross-device sync
+    // Currently disabled to prevent conflicts during development
     // try {
     //   await IsolatedOnboardingService.updateOnboardingProgress(user.uid, data.currentStep || 1, data);
     // } catch (err) {

@@ -45,18 +45,18 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       <div className="text-center mb-16">
         {/* Professional Header */}
         <div className="mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full border border-blue-200 dark:border-blue-800 mb-6">
-            <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">🎯 Personalized Just for You</span>
+          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-50 to-violet-50 dark:from-cyan-900/20 dark:to-violet-900/20 rounded-full border border-cyan-200 dark:border-cyan-800 mb-6">
+            <span className="bg-gradient-to-r from-cyan-600 to-violet-600 bg-clip-text text-transparent dark:from-cyan-400 dark:to-violet-400 text-sm font-medium">🎯 Personalized Just for You</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-black mb-6 leading-tight">
             Get a fitness plan tailored to your goals
-            <span className="block text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text">
+            <span className="block text-transparent bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 bg-clip-text">
               and lifestyle
             </span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className="text-xl md:text-2xl text-black max-w-3xl mx-auto leading-relaxed mb-8">
             Join thousands who've transformed their lives with science-backed,
             personalized workout plans that actually fit your schedule.
           </p>
@@ -65,27 +65,27 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         {/* Professional Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+            <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
               <span className="text-2xl">🏋️</span>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Custom Workouts</h3>
-            <p className="text-gray-600 dark:text-gray-300">Exercises matched to your fitness level and available equipment</p>
+            <h3 className="text-xl font-semibold text-black mb-2">Custom Workouts</h3>
+            <p className="text-black">Exercises matched to your fitness level and available equipment</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-fuchsia-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
               <span className="text-2xl">📅</span>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Flexible Schedule</h3>
-            <p className="text-gray-600 dark:text-gray-300">Workouts that fit your busy lifestyle and time constraints</p>
+            <h3 className="text-xl font-semibold text-black mb-2">Flexible Schedule</h3>
+            <p className="text-black">Workouts that fit your busy lifestyle and time constraints</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
               <span className="text-2xl">🎯</span>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Goal-Focused</h3>
-            <p className="text-gray-600 dark:text-gray-300">Every exercise designed to help you reach your specific goals</p>
+            <h3 className="text-xl font-semibold text-black mb-2">Goal-Focused</h3>
+            <p className="text-black">Every exercise designed to help you reach your specific goals</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         <div className="mb-8">
           <button
             onClick={onNext}
-            className="inline-flex items-center px-10 py-5 text-xl font-semibold text-white bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25"
+            className="inline-flex items-center px-10 py-5 text-xl font-semibold text-white bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 rounded-2xl hover:from-cyan-700 hover:via-violet-700 hover:to-fuchsia-700 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-cyan-500/25"
           >
             Start Your 2-Minute Assessment
             <svg className="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,7 +101,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             </svg>
           </button>
 
-          <p className="text-base text-gray-500 dark:text-gray-400 mt-4 flex items-center justify-center gap-4">
+          <p className="text-base text-gray-600 mt-4 flex items-center justify-center gap-4">
             <span className="flex items-center">
               <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -125,14 +125,14 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       </div>
 
       {/* Social Proof Stats */}
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-3xl p-8 mb-16">
+      <div className="bg-gradient-to-r from-cyan-50 to-violet-50 dark:from-cyan-900/20 dark:to-violet-900/20 rounded-3xl p-8 mb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-violet-600 bg-clip-text text-transparent mb-2">
                 {stat.number}
               </div>
-              <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <div className="text-sm font-medium text-gray-700">
                 {stat.label}
               </div>
             </div>
@@ -143,31 +143,31 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       {/* Success Stories */}
       <div className="mb-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Real Results from Real People
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
             Join thousands who've achieved their fitness goals with personalized plans
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div key={index} className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xl mr-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-violet-500 rounded-full flex items-center justify-center text-xl mr-4">
                   {testimonial.image}
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
+                  <div className="font-semibold text-gray-900">
                     {testimonial.name}
                   </div>
-                  <div className="text-sm font-medium text-green-600 dark:text-green-400">
+                  <div className="text-sm font-medium text-green-600">
                     {testimonial.result}
                   </div>
                 </div>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed">
                 "{testimonial.quote}"
               </p>
               <div className="flex text-yellow-400 mt-4">
@@ -183,7 +183,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       </div>
 
       {/* Final CTA Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl p-12 text-center text-white">
+      <div className="bg-gradient-to-r from-cyan-600 via-violet-600 to-fuchsia-600 rounded-3xl p-12 text-center text-white">
         <h3 className="text-3xl md:text-4xl font-bold mb-4">
           Ready to Transform Your Life?
         </h3>
@@ -193,7 +193,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
 
         <button
           onClick={onNext}
-          className="inline-flex items-center px-10 py-5 text-xl font-semibold text-blue-600 bg-white rounded-2xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-2xl"
+          className="inline-flex items-center px-10 py-5 text-xl font-semibold bg-gradient-to-r from-cyan-600 to-violet-600 bg-clip-text text-transparent bg-white rounded-2xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-2xl"
         >
           Start My Free Assessment
           <svg className="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

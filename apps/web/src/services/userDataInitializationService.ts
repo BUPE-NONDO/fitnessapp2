@@ -1,6 +1,5 @@
 import {
   doc,
-  setDoc,
   collection,
   addDoc,
   serverTimestamp,
@@ -36,12 +35,7 @@ export interface FreshUserData {
 export class UserDataInitializationService {
   private static readonly USERS_COLLECTION = 'users';
   private static readonly USER_STATS_COLLECTION = 'user_stats';
-  private static readonly GOALS_COLLECTION = 'goals';
-  private static readonly WORKOUT_SESSIONS_COLLECTION = 'workout_sessions';
-  private static readonly CHECK_INS_COLLECTION = 'check_ins';
-  private static readonly USER_BADGES_COLLECTION = 'user_badges';
   private static readonly ACTIVITY_LOGS_COLLECTION = 'activity_logs';
-  private static readonly WORKOUT_ROUTINES_COLLECTION = 'workout_routines';
 
   /**
    * Initialize a completely fresh user with zero data
@@ -203,7 +197,7 @@ export class UserDataInitializationService {
         },
         onboardingCompleted: false,
         onboardingStarted: false,
-        onboardingData: null,
+        onboardingData: undefined,
         badges: [],
         achievements: [],
         updatedAt: new Date(),
@@ -220,7 +214,7 @@ export class UserDataInitializationService {
         totalBadges: 0,
         currentStreak: 0,
         longestStreak: 0,
-        joinDate: currentProfile.createdAt || new Date(),
+        joinDate: Timestamp.fromDate(currentProfile.createdAt || new Date()),
         lastActivityDate: null,
         onboardingCompleted: false,
         onboardingStarted: false,
@@ -363,7 +357,7 @@ export class UserDataInitializationService {
   }
 
   // Private helper methods
-  private static getDefaultFreshStats(userId: string): FreshUserData {
+  private static getDefaultFreshStats(_userId: string): FreshUserData {
     return {
       totalWorkouts: 0,
       totalGoals: 0,
@@ -371,7 +365,7 @@ export class UserDataInitializationService {
       totalBadges: 0,
       currentStreak: 0,
       longestStreak: 0,
-      joinDate: new Date(),
+      joinDate: Timestamp.fromDate(new Date()),
       lastActivityDate: null,
       onboardingCompleted: false,
       onboardingStarted: false,

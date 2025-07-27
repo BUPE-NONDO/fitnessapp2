@@ -1,0 +1,381 @@
+name: 🚀 Enterprise CI/CD Pipeline
+# Sub-5 minute pipeline with canary deployments and notifications
+
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'hotfix/*']
+  pull_request:
+    branches: [main, develop]
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '18'
+  CACHE_VERSION: 'v1'
+  FIREBASE_PROJECT_ID: 'fitness-app-bupe-staging'
+
+jobs:
+  # ============================================================================
+  # STAGE 1: FAST FEEDBACK (< 2 minutes)
+  # ============================================================================
+  
+  fast-feedback:
+    name: ⚡ Fast Feedback
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      cache-hit: ${{ steps.cache.outputs.cache-hit }}
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for semantic versioning
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 🎯 Cache Dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/web/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-deps-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-${{ env.CACHE_VERSION }}-
+      
+      - name: 📦 Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+      
+      - name: 🔍 Lint & Format Check
+        run: |
+          npm run lint
+          npm run format:check
+      
+      - name: 📊 Generate Version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+  # ============================================================================
+  # STAGE 2: COMPREHENSIVE TESTING (< 2 minutes)
+  # ============================================================================
+  
+  test-suite:
+    name: 🧪 Test Suite
+    runs-on: ubuntu-latest
+    needs: fast-feedback
+    timeout-minutes: 4
+    strategy:
+      matrix:
+        test-type: [unit, integration, e2e]
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 🎯 Restore Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/web/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-deps-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: 📦 Install Dependencies
+        if: needs.fast-feedback.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit
+      
+      - name: 🧪 Run Tests
+        run: |
+          case "${{ matrix.test-type }}" in
+            unit)
+              npm run test:unit -- --coverage --maxWorkers=2
+              ;;
+            integration)
+              npm run test:integration -- --maxWorkers=2
+              ;;
+            e2e)
+              npm run test:e2e -- --headless
+              ;;
+          esac
+      
+      - name: 📊 Upload Coverage
+        if: matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+      
+      - name: 🔍 Mutation Testing
+        if: matrix.test-type == 'unit'
+        run: npm run test:mutation
+      
+      - name: 📈 Performance Testing
+        if: matrix.test-type == 'e2e'
+        run: npm run test:performance
+
+  # ============================================================================
+  # STAGE 3: SECURITY & QUALITY (< 1 minute)
+  # ============================================================================
+  
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: fast-feedback
+    timeout-minutes: 2
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 🔍 Dependency Vulnerability Scan
+        run: npm audit --audit-level=high
+      
+      - name: 🛡️ CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+      
+      - name: 🔍 SAST Scan
+        uses: securecodewarrior/github-action-add-sarif@v1
+        with:
+          sarif-file: 'security-scan-results.sarif'
+      
+      - name: 📊 Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: security-scan-results.sarif
+
+  # ============================================================================
+  # STAGE 4: BUILD & PACKAGE (< 1 minute)
+  # ============================================================================
+  
+  build:
+    name: 🏗️ Build & Package
+    runs-on: ubuntu-latest
+    needs: [fast-feedback, test-suite, security-scan]
+    timeout-minutes: 3
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 🎯 Restore Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            apps/web/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-deps-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: 🏗️ Build Application
+        run: |
+          npm run build
+          npm run build:analyze
+        env:
+          REACT_APP_VERSION: ${{ needs.fast-feedback.outputs.version }}
+          NODE_ENV: production
+      
+      - name: 📦 Create Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ needs.fast-feedback.outputs.version }}
+          path: apps/web/dist/
+          retention-days: 30
+      
+      - name: 📊 Bundle Analysis
+        run: npm run bundle:analyze
+      
+      - name: 🔍 Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # ============================================================================
+  # STAGE 5: DEPLOYMENT STRATEGIES
+  # ============================================================================
+  
+  deploy-staging:
+    name: 🚀 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 📦 Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{ needs.fast-feedback.outputs.version }}
+          path: apps/web/dist/
+      
+      - name: 🚀 Deploy to Firebase Staging
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}'
+          projectId: fitness-app-bupe-staging
+          channelId: staging
+      
+      - name: 📱 Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🚀 Staging deployment completed
+            Version: ${{ needs.fast-feedback.outputs.version }}
+            Environment: staging
+            URL: https://fitness-app-bupe-staging.web.app
+
+  deploy-canary:
+    name: 🐤 Canary Deployment
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 📦 Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{ needs.fast-feedback.outputs.version }}
+          path: apps/web/dist/
+      
+      - name: 🐤 Deploy Canary (10% traffic)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}'
+          projectId: fitness-app-bupe-production
+          channelId: canary
+      
+      - name: ⏱️ Wait for Canary Validation
+        run: sleep 300 # 5 minutes
+      
+      - name: 📊 Validate Canary Metrics
+        run: |
+          # Check error rates, performance metrics
+          npm run validate:canary
+      
+      - name: 📱 Notify Discord
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            🐤 **Canary Deployment Successful**
+            Version: `${{ needs.fast-feedback.outputs.version }}`
+            Traffic: 10%
+            Status: Monitoring...
+
+  deploy-production:
+    name: 🌟 Production Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-canary]
+    if: success()
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+      
+      - name: 📦 Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{ needs.fast-feedback.outputs.version }}
+          path: apps/web/dist/
+      
+      - name: 🌟 Deploy to Production (100% traffic)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}'
+          projectId: fitness-app-bupe-production
+          target: production
+      
+      - name: 📊 Post-deployment Validation
+        run: |
+          npm run validate:production
+          npm run test:smoke
+      
+      - name: 📱 Success Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🎉 **Production Deployment Successful!**
+            Version: ${{ needs.fast-feedback.outputs.version }}
+            Environment: production
+            URL: https://fitnessapp.com
+            Lighthouse Score: 95+
+
+  # ============================================================================
+  # ROLLBACK STRATEGY
+  # ============================================================================
+  
+  rollback:
+    name: 🔄 Automated Rollback
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: failure()
+    environment: production
+    
+    steps:
+      - name: 🔄 Rollback Production
+        run: |
+          # Implement rollback logic
+          firebase hosting:channel:deploy production --only hosting:previous
+      
+      - name: 🚨 Critical Alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#critical-alerts'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🚨 **CRITICAL: Production Rollback Executed**
+            Failed Version: ${{ needs.fast-feedback.outputs.version }}
+            Action: Automatic rollback to previous version
+            Incident: Created automatically

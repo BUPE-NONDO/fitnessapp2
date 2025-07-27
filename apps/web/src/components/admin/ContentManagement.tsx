@@ -28,48 +28,21 @@ export function ContentManagement({ className = '' }: ContentManagementProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Mock data - in real app, this would come from API
+  // Load content from API
   useEffect(() => {
-    const mockContent: ContentItem[] = [
-      {
-        id: '1',
-        type: 'goal_template',
-        name: 'Weight Loss Beginner',
-        description: 'A gentle start to your weight loss journey',
-        category: 'weight_loss',
-        isActive: true,
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-07-20'),
-        metadata: { difficulty: 'beginner', duration: '4 weeks' }
-      },
-      {
-        id: '2',
-        type: 'badge_definition',
-        name: 'First Workout',
-        description: 'Complete your first workout',
-        category: 'onboarding',
-        isActive: true,
-        createdAt: new Date('2024-02-01'),
-        updatedAt: new Date('2024-07-15'),
-        metadata: { points: 10, rarity: 'common' }
-      },
-      {
-        id: '3',
-        type: 'workout_template',
-        name: 'Morning Cardio',
-        description: '30-minute morning cardio routine',
-        category: 'cardio',
-        isActive: true,
-        createdAt: new Date('2024-03-10'),
-        updatedAt: new Date('2024-07-18'),
-        metadata: { duration: 30, equipment: 'none' }
-      },
-    ];
+    // TODO: Replace with real API call
+    const loadContent = async () => {
+      try {
+        // In production, this would fetch from Firestore
+        setContent([]);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading content:', error);
+        setLoading(false);
+      }
+    };
 
-    setTimeout(() => {
-      setContent(mockContent);
-      setLoading(false);
-    }, 1000);
+    loadContent();
   }, []);
 
   const tabs = [

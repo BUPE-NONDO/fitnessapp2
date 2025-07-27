@@ -28,6 +28,8 @@ const fallbackIcons = {
   settings: '⚙️',
   menu: '☰',
   x: '❌',
+  close: '✖️',
+  cancel: '❌',
   chevron_right: '▶️',
   chevron_left: '◀️',
   chevron_up: '🔼',

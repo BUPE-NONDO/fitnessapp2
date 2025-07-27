@@ -48,11 +48,11 @@ export function useAuth(): AuthState & AuthActions {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, acceptedTerms: boolean = false) => {
     try {
       setError(null);
       setLoading(true);
-      await AuthService.signUpWithEmail(email, password, name);
+      await AuthService.signUpWithEmail(email, password, name, acceptedTerms);
       setJustLoggedIn(true);
     } catch (err: any) {
       setError(err.message);

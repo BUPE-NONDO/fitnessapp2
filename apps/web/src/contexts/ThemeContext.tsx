@@ -150,6 +150,7 @@ export function ThemeToggle({ className = '', showLabel = false, size = 'md' }: 
           {themes.map((themeOption) => (
             <button
               key={themeOption.value}
+              type="button"
               onClick={() => setTheme(themeOption.value)}
               className={`${buttonSizeClasses[size]} rounded-md font-medium transition-all duration-200 ${
                 theme === themeOption.value
@@ -169,6 +170,7 @@ export function ThemeToggle({ className = '', showLabel = false, size = 'md' }: 
 
   return (
     <button
+      type="button"
       onClick={() => {
         const currentIndex = themes.findIndex(t => t.value === theme);
         const nextIndex = (currentIndex + 1) % themes.length;
@@ -200,6 +202,7 @@ export function ThemeDropdown({ className = '' }: { className?: string }) {
   return (
     <div className={`relative ${className}`}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 border border-gray-200 dark:border-gray-600"
       >
@@ -224,6 +227,7 @@ export function ThemeDropdown({ className = '' }: { className?: string }) {
               {themes.map((themeOption) => (
                 <button
                   key={themeOption.value}
+                  type="button"
                   onClick={() => {
                     setTheme(themeOption.value);
                     setIsOpen(false);

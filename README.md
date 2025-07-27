@@ -1,15 +1,43 @@
-# 🏋️ FitnessApp
+# 🏋️ FitnessApp - Complete Fitness Tracking Solution
 
-A modern fitness tracking application that helps users set, monitor, and achieve fitness goals through personalized dashboards and data-driven progress tracking.
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
+> A comprehensive fitness tracking application built with modern web technologies, featuring personalized workout plans, progress tracking, and achievement systems.
+
+## 🌟 **Live Demo**
+
+🚀 **Staging Environment:** [https://fitness-app-bupe-staging.web.app](https://fitness-app-bupe-staging.web.app)
 
 ## 🎯 Overview
 
-FitnessApp enables users to:
-- Set measurable health and fitness goals
-- Log progress with detailed context (weight, reps, distance, etc.)
-- Visualize progress and habits over time
-- Track streaks and earn achievement badges
-- Monitor goal completion rates and personal records
+### 🎯 **Core Features**
+- **🔐 Secure Authentication** - Firebase Auth with Google Sign-in
+- **📋 Smart Onboarding** - 8-step personalized setup process
+- **📊 Dynamic Dashboard** - Real-time progress tracking and analytics
+- **🏋️ Workout Planning** - AI-generated personalized workout plans
+- **🏆 Achievement System** - Badges and milestones to keep you motivated
+- **⚙️ Comprehensive Settings** - Profile management with enterprise-grade security
+
+### 🛡️ **Security & Privacy**
+- **🔒 Password Security** - Industry-standard bcrypt/scrypt hashing
+- **🔐 Secure Authentication** - Firebase Auth with multi-factor support
+- **🛡️ Data Protection** - HTTPS/TLS 1.3 encryption for all data transmission
+- **🔑 Privacy Controls** - Granular privacy settings and data management
+
+### 📱 **User Experience**
+- **🌓 Dark/Light Theme** - Automatic theme switching based on user preference
+- **📱 Responsive Design** - Optimized for mobile, tablet, and desktop
+- **♿ Accessibility** - WCAG 2.1 AA compliant with full keyboard navigation
+- **⚡ Performance** - Optimized loading with code splitting and caching
+
+### 📈 **Progress Tracking**
+- **📊 Real-time Analytics** - Weekly and monthly progress visualization
+- **🎯 Goal Management** - Smart goal setting and tracking
+- **📅 Calendar Integration** - Workout scheduling and planning
+- **🏃 Activity Logging** - Comprehensive workout and activity tracking
 
 ## 🛠️ Tech Stack
 
@@ -27,6 +55,101 @@ FitnessApp enables users to:
 | **Monorepo** | PNPM workspaces + Turborepo |
 | **Testing** | Vitest + Playwright + Storybook |
 | **CI/CD** | GitHub Actions |
+
+## 🚀 **Quick Start**
+
+### **Prerequisites**
+- Node.js 18+
+- npm or pnpm
+- Firebase account
+- Git
+
+### **Installation**
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/BUPE-NONDO/fitnessapp2.git
+   cd fitnessapp2
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp apps/web/.env.example apps/web/.env
+   # Edit .env with your Firebase configuration
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   # or
+   pnpm dev
+   ```
+
+5. **Open your browser**
+   ```
+   http://localhost:3000
+   ```
+
+## 🧪 **Testing**
+
+```bash
+# Run unit tests
+npm run test
+
+# Run integration tests
+npm run test:integration
+
+# Run e2e tests
+npm run test:e2e
+
+# Generate coverage report
+npm run test:coverage
+```
+
+## 🚀 **Deployment**
+
+### **Firebase Hosting**
+```bash
+# Build for production
+npm run build
+
+# Deploy to Firebase
+npm run deploy
+
+# Deploy to staging
+npm run deploy:staging
+```
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 👨‍💻 **Author**
+
+**Bupe Nondo**
+- GitHub: [@BUPE-NONDO](https://github.com/BUPE-NONDO)
+- Email: peternondo1@gmail.com
+
+## 📄 **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <strong>Built with ❤️ for fitness enthusiasts everywhere</strong>
+</div>
 
 ## 📁 Project Structure
 

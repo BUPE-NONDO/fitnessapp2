@@ -1,11 +1,10 @@
 import { db } from '@/lib/firebase';
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  deleteDoc, 
-  writeBatch, 
-  query, 
+import {
+  collection,
+  doc,
+  getDocs,
+  writeBatch,
+  query,
   where,
   serverTimestamp,
   setDoc

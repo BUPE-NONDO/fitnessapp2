@@ -1,14 +1,16 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  orderBy, 
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
   limit,
-  Timestamp 
+  addDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { UserProfile } from '@/hooks/useUser';
+import { UserProgressionService } from './userProgressionService';
 
 export interface ProgressStats {
   // Onboarding & Setup
@@ -57,7 +59,11 @@ export interface ProgressStats {
     targetWeight?: number;
     progressPercentage: number;
   };
-  
+
+  // Weekly and Monthly Progress
+  weeklyProgress: number; // Percentage of weekly goals completed
+  monthlyProgress: number; // Percentage of monthly goals completed
+
   // Activity Summary
   lastActivityDate?: Date;
   daysSinceLastActivity: number;
@@ -160,10 +166,14 @@ export class ProgressTrackingService {
 
       // Calculate activity metrics
       const lastActivityDate = this.getLastActivityDate(workoutSessions, checkIns, activityLogs);
-      const daysSinceLastActivity = lastActivityDate 
+      const daysSinceLastActivity = lastActivityDate
         ? Math.floor((now.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
         : 999;
       const isActiveUser = daysSinceLastActivity <= 7; // Active if activity within last week
+
+      // Calculate weekly and monthly progress percentages
+      const weeklyProgress = this.calculateWeeklyProgress(workoutsThisWeek, checkInsThisWeek, goalCompletionRate);
+      const monthlyProgress = this.calculateMonthlyProgress(workoutsThisMonth, checkInsThisMonth, goalCompletionRate);
 
       return {
         onboardingCompleted: !!userProfile.onboardingCompleted,
@@ -190,6 +200,8 @@ export class ProgressTrackingService {
         moodTrend,
         energyTrend,
         weightProgress,
+        weeklyProgress,
+        monthlyProgress,
         lastActivityDate,
         daysSinceLastActivity,
         isActiveUser,
@@ -512,8 +524,100 @@ export class ProgressTrackingService {
     ].filter(date => date);
 
     if (dates.length === 0) return undefined;
-    
+
     return new Date(Math.max(...dates.map(d => d.getTime())));
+  }
+
+  /**
+   * Calculate weekly progress percentage based on activity and goals
+   */
+  private static calculateWeeklyProgress(workoutsThisWeek: number, checkInsThisWeek: number, goalCompletionRate: number): number {
+    // For new users, return 0
+    if (workoutsThisWeek === 0 && checkInsThisWeek === 0 && goalCompletionRate === 0) {
+      return 0;
+    }
+
+    // Calculate based on a combination of workouts, check-ins, and goal completion
+    // Assume ideal week has 3-4 workouts and daily check-ins (7)
+    const workoutScore = Math.min((workoutsThisWeek / 3) * 100, 100); // 3 workouts = 100%
+    const checkInScore = Math.min((checkInsThisWeek / 7) * 100, 100); // 7 check-ins = 100%
+    const goalScore = goalCompletionRate;
+
+    // Weighted average: 40% workouts, 30% check-ins, 30% goals
+    return Math.round((workoutScore * 0.4) + (checkInScore * 0.3) + (goalScore * 0.3));
+  }
+
+  /**
+   * Calculate monthly progress percentage based on activity and goals
+   */
+  private static calculateMonthlyProgress(workoutsThisMonth: number, checkInsThisMonth: number, goalCompletionRate: number): number {
+    // For new users, return 0
+    if (workoutsThisMonth === 0 && checkInsThisMonth === 0 && goalCompletionRate === 0) {
+      return 0;
+    }
+
+    // Calculate based on a combination of workouts, check-ins, and goal completion
+    // Assume ideal month has 12-16 workouts and daily check-ins (30)
+    const workoutScore = Math.min((workoutsThisMonth / 12) * 100, 100); // 12 workouts = 100%
+    const checkInScore = Math.min((checkInsThisMonth / 30) * 100, 100); // 30 check-ins = 100%
+    const goalScore = goalCompletionRate;
+
+    // Weighted average: 40% workouts, 30% check-ins, 30% goals
+    return Math.round((workoutScore * 0.4) + (checkInScore * 0.3) + (goalScore * 0.3));
+  }
+
+  /**
+   * Track workout completion and update progress
+   */
+  static async trackWorkoutCompletion(
+    userId: string,
+    workoutId: string,
+    workoutName: string,
+    exerciseCount: number,
+    duration: number
+  ): Promise<void> {
+    try {
+      // Create workout session record
+      const workoutSession = {
+        userId,
+        workoutId,
+        workoutName,
+        exerciseCount,
+        duration,
+        completedAt: new Date(),
+        date: new Date()
+      };
+
+      // Add to workout sessions collection
+      await addDoc(collection(db, this.WORKOUT_SESSIONS_COLLECTION), {
+        ...workoutSession,
+        completedAt: serverTimestamp(),
+        date: serverTimestamp()
+      });
+
+      // Update user progression
+      await UserProgressionService.completeWorkout(userId);
+
+      console.log('✅ Workout completion tracked successfully');
+    } catch (error) {
+      console.error('❌ Error tracking workout completion:', error);
+      throw new Error('Failed to track workout completion');
+    }
+  }
+
+  /**
+   * Track goal completion and update progress
+   */
+  static async trackGoalCompletion(userId: string, goalId: string): Promise<void> {
+    try {
+      // Update user progression
+      await UserProgressionService.completeGoal(userId);
+
+      console.log('✅ Goal completion tracked successfully');
+    } catch (error) {
+      console.error('❌ Error tracking goal completion:', error);
+      throw new Error('Failed to track goal completion');
+    }
   }
 
   /**
@@ -543,6 +647,8 @@ export class ProgressTrackingService {
       averageEnergy: 0,
       moodTrend: 'stable',
       energyTrend: 'stable',
+      weeklyProgress: 0, // New users start at 0%
+      monthlyProgress: 0, // New users start at 0%
       daysSinceLastActivity: 0, // Fresh users have no activity gap
       isActiveUser: false,
     };

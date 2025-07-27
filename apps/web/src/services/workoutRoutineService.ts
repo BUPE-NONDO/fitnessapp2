@@ -72,7 +72,6 @@ export interface WorkoutSession {
 export class WorkoutRoutineService {
   private static readonly ROUTINES_COLLECTION = 'workout_routines';
   private static readonly SESSIONS_COLLECTION = 'workout_sessions';
-  private static readonly EXERCISES_COLLECTION = 'exercises';
 
   /**
    * Generate a personalized workout routine based on onboarding data

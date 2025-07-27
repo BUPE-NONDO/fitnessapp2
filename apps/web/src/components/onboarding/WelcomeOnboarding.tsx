@@ -85,7 +85,7 @@ export function WelcomeOnboarding({
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-purple-500 to-primary-600 text-white p-8 rounded-t-2xl overflow-hidden">
+        <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-8 rounded-t-2xl overflow-hidden">
           {/* Circle decorations */}
           <div className="absolute top-4 right-4 w-16 h-16 bg-white/10 rounded-full"></div>
           <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/20 rounded-full"></div>
@@ -121,8 +121,8 @@ export function WelcomeOnboarding({
                   <span className="text-blue-600 dark:text-blue-400 text-sm">🎯</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Personalized Goals</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Personalized Goals</h3>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                     Get custom fitness goals based on your preferences
                   </p>
                 </div>
@@ -166,14 +166,14 @@ export function WelcomeOnboarding({
             </div>
 
             {/* Setup Info */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-cyan-50 to-violet-50 dark:bg-gradient-to-r dark:from-cyan-900/30 dark:to-violet-900/30 border border-cyan-200 dark:border-cyan-700/50 rounded-lg p-4">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">⏱️</div>
                 <div>
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                  <h3 className="font-semibold bg-gradient-to-r from-cyan-700 to-violet-700 bg-clip-text text-transparent dark:from-cyan-300 dark:to-violet-300">
                     Quick 2-minute setup
                   </h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <p className="text-sm text-cyan-600 dark:text-cyan-200">
                     Tell us about your fitness goals and preferences to get personalized recommendations
                   </p>
                 </div>

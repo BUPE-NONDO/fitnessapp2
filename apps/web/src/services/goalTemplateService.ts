@@ -155,6 +155,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 25,
           frequency: 'daily',
+          isActive: true,
         },
         {
           title: 'Weekly Long Session',
@@ -162,6 +163,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 45,
           frequency: 'weekly',
+          isActive: true,
         },
         {
           title: 'Active Recovery',
@@ -169,6 +171,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 15,
           frequency: 'daily',
+          isActive: true,
         },
       ],
     },
@@ -188,6 +191,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 3,
           frequency: 'weekly',
+          isActive: true,
         },
         {
           title: 'Core Strengthening',
@@ -195,6 +199,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 10,
           frequency: 'daily',
+          isActive: true,
         },
         {
           title: 'Flexibility Work',
@@ -202,6 +207,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 2,
           frequency: 'weekly',
+          isActive: true,
         },
       ],
     },
@@ -221,6 +227,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 4,
           frequency: 'weekly',
+          isActive: true,
         },
         {
           title: 'Daily Steps',
@@ -228,6 +235,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 8000,
           frequency: 'daily',
+          isActive: true,
         },
         {
           title: 'Weekly Active Time',
@@ -235,6 +243,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 150, // minutes
           frequency: 'weekly',
+          isActive: true,
         },
       ],
     },
@@ -254,6 +263,7 @@ export class GoalTemplateService {
           metric: 'duration',
           target: 15,
           frequency: 'daily',
+          isActive: true,
         },
         {
           title: 'Yoga Sessions',
@@ -261,6 +271,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 2,
           frequency: 'weekly',
+          isActive: true,
         },
         {
           title: 'Mobility Work',
@@ -268,6 +279,7 @@ export class GoalTemplateService {
           metric: 'count',
           target: 3,
           frequency: 'weekly',
+          isActive: true,
         },
       ],
     },
@@ -279,7 +291,7 @@ export class GoalTemplateService {
   static getRecommendedTemplates(
     fitnessGoals: string[],
     fitnessLevel: string,
-    workoutDaysPerWeek?: number
+    _workoutDaysPerWeek?: number
   ): GoalTemplate[] {
     return this.templates.filter(template => {
       // Check if template matches any of the user's fitness goals

@@ -1,380 +1,245 @@
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@/hooks/useUser';
-import { WorkoutRoutineService, WorkoutSession, Exercise } from '@/services/workoutRoutineService';
+import React, { useState } from 'react';
+import { WorkoutTimer } from './WorkoutTimer';
 import { Icon } from '@/components/ui/Icon';
-import { cn } from '@/lib/utils';
 
-interface WorkoutSessionProps {
-  sessionId?: string;
-  onComplete?: () => void;
-  className?: string;
+interface Exercise {
+  name: string;
+  duration: number;
+  rest?: number;
+  description?: string;
+  tips?: string[];
 }
 
-export function WorkoutSessionComponent({ sessionId, onComplete, className = '' }: WorkoutSessionProps) {
-  const { user } = useUser();
-  const [session, setSession] = useState<WorkoutSession | null>(null);
-  const [exercises, setExercises] = useState<Record<string, Exercise>>({});
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [currentSetIndex, setCurrentSetIndex] = useState(0);
-  const [startTime, setStartTime] = useState<Date>(new Date());
-  const [isResting, setIsResting] = useState(false);
-  const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [loading, setLoading] = useState(true);
+interface WorkoutPlan {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  duration: number; // total duration in minutes
+  exercises: Exercise[];
+}
 
-  useEffect(() => {
-    if (sessionId) {
-      loadSession();
-    } else {
-      startNewSession();
-    }
-  }, [sessionId, user]);
+interface WorkoutSessionProps {
+  workoutPlan?: WorkoutPlan;
+  onComplete?: (sessionData: any) => void;
+  onClose?: () => void;
+}
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isResting && restTimeLeft > 0) {
-      interval = setInterval(() => {
-        setRestTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsResting(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isResting, restTimeLeft]);
+export function WorkoutSession({ 
+  workoutPlan,
+  onComplete,
+  onClose 
+}: WorkoutSessionProps) {
+  const [showTimer, setShowTimer] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
 
-  const startNewSession = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const routine = await WorkoutRoutineService.getUserRoutine(user.uid);
-      if (!routine) throw new Error('No active routine found');
-
-      const newSession = await WorkoutRoutineService.startWorkoutSession(user.uid, routine.id);
-      setSession(newSession);
-      setStartTime(new Date());
-      
-      // Load exercise details
-      const exerciseMap: Record<string, Exercise> = {};
-      for (const exercise of newSession.exercises) {
-        const exerciseDetail = WorkoutRoutineService.getExerciseById(exercise.exerciseId);
-        if (exerciseDetail) {
-          exerciseMap[exercise.exerciseId] = exerciseDetail;
-        }
+  // Default workout plan if none provided
+  const defaultPlan: WorkoutPlan = {
+    id: 'default-beginner',
+    name: 'Beginner Full Body Workout',
+    description: 'A gentle introduction to fitness with basic exercises',
+    difficulty: 'beginner',
+    duration: 25,
+    exercises: [
+      {
+        name: 'Warm Up',
+        duration: 300, // 5 minutes
+        description: 'Light stretching and movement to prepare your body',
+        tips: ['Start slowly', 'Focus on breathing', 'Gentle movements only']
+      },
+      {
+        name: 'Push-ups (Modified)',
+        duration: 180, // 3 minutes
+        rest: 60,
+        description: 'Modified push-ups from knees or wall',
+        tips: ['Keep core engaged', 'Control the movement', 'Modify as needed']
+      },
+      {
+        name: 'Bodyweight Squats',
+        duration: 180, // 3 minutes
+        rest: 60,
+        description: 'Basic squats focusing on form',
+        tips: ['Feet shoulder-width apart', 'Keep chest up', 'Go at your own pace']
+      },
+      {
+        name: 'Plank Hold',
+        duration: 120, // 2 minutes
+        rest: 60,
+        description: 'Hold plank position for strength',
+        tips: ['Keep body straight', 'Breathe normally', 'Modify on knees if needed']
+      },
+      {
+        name: 'Marching in Place',
+        duration: 180, // 3 minutes
+        rest: 60,
+        description: 'Light cardio to get heart rate up',
+        tips: ['Lift knees high', 'Swing arms naturally', 'Maintain steady pace']
+      },
+      {
+        name: 'Cool Down Stretch',
+        duration: 300, // 5 minutes
+        description: 'Gentle stretching to end the session',
+        tips: ['Hold each stretch', 'Breathe deeply', 'Relax and unwind']
       }
-      setExercises(exerciseMap);
-    } catch (error) {
-      console.error('Failed to start session:', error);
-    } finally {
-      setLoading(false);
+    ]
+  };
+
+  const plan = workoutPlan || defaultPlan;
+
+  const handleStartWorkout = () => {
+    setSessionStarted(true);
+    setShowTimer(true);
+  };
+
+  const handleTimerComplete = () => {
+    setShowTimer(false);
+    
+    // Create session data
+    const sessionData = {
+      workoutId: plan.id,
+      workoutName: plan.name,
+      completedAt: new Date(),
+      duration: plan.duration,
+      exercises: plan.exercises.length,
+      difficulty: plan.difficulty
+    };
+
+    onComplete?.(sessionData);
+  };
+
+  const handleTimerClose = () => {
+    setShowTimer(false);
+    if (!sessionStarted) {
+      onClose?.();
     }
   };
 
-  const loadSession = async () => {
-    // In a real app, you'd load the session from the database
-    // For now, we'll start a new session
-    startNewSession();
-  };
-
-  const completeSet = (weight?: number, reps?: number, duration?: number) => {
-    if (!session) return;
-
-    const updatedSession = { ...session };
-    const currentExercise = updatedSession.exercises[currentExerciseIndex];
-    const currentSet = currentExercise.sets[currentSetIndex];
-
-    // Update the set
-    currentSet.completed = true;
-    if (weight !== undefined) currentSet.weight = weight;
-    if (reps !== undefined) currentSet.reps = reps;
-    if (duration !== undefined) currentSet.duration = duration;
-
-    setSession(updatedSession);
-
-    // Check if exercise is complete
-    const allSetsComplete = currentExercise.sets.every(set => set.completed);
-    if (allSetsComplete) {
-      currentExercise.completed = true;
-    }
-
-    // Move to next set or exercise
-    if (currentSetIndex < currentExercise.sets.length - 1) {
-      setCurrentSetIndex(currentSetIndex + 1);
-      startRest();
-    } else if (currentExerciseIndex < updatedSession.exercises.length - 1) {
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
-      setCurrentSetIndex(0);
-      startRest();
-    } else {
-      // Workout complete
-      completeWorkout();
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return 'text-green-600 bg-green-100';
+      case 'intermediate': return 'text-yellow-600 bg-yellow-100';
+      case 'advanced': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
-  const startRest = () => {
-    if (!session) return;
-    
-    const currentExercise = session.exercises[currentExerciseIndex];
-    const exercise = exercises[currentExercise.exerciseId];
-    
-    // Get rest time from routine (you'd need to add this to the session data)
-    const restTime = 60; // Default 60 seconds
-    
-    setIsResting(true);
-    setRestTimeLeft(restTime);
-  };
+  const totalDuration = plan.exercises.reduce((total, exercise) => {
+    return total + exercise.duration + (exercise.rest || 0);
+  }, 0);
 
-  const skipRest = () => {
-    setIsResting(false);
-    setRestTimeLeft(0);
-  };
-
-  const completeWorkout = async () => {
-    if (!session || !user) return;
-
-    try {
-      const duration = Math.round((new Date().getTime() - startTime.getTime()) / 60000); // minutes
-      await WorkoutRoutineService.completeWorkoutSession(session.id, duration);
-      
-      if (onComplete) {
-        onComplete();
-      }
-    } catch (error) {
-      console.error('Failed to complete workout:', error);
-    }
-  };
-
-  const getCurrentExercise = () => {
-    if (!session || currentExerciseIndex >= session.exercises.length) return null;
-    return session.exercises[currentExerciseIndex];
-  };
-
-  const getCurrentExerciseDetail = () => {
-    const currentExercise = getCurrentExercise();
-    if (!currentExercise) return null;
-    return exercises[currentExercise.exerciseId];
-  };
-
-  const getProgressPercentage = () => {
-    if (!session) return 0;
-    
-    const totalSets = session.exercises.reduce((total, ex) => total + ex.sets.length, 0);
-    const completedSets = session.exercises.reduce((total, ex) => 
-      total + ex.sets.filter(set => set.completed).length, 0
-    );
-    
-    return Math.round((completedSets / totalSets) * 100);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (loading) {
+  if (showTimer) {
     return (
-      <div className={cn('flex items-center justify-center py-12', className)}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600 dark:text-gray-400">Starting workout...</span>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className={cn('text-center py-12', className)}>
-        <Icon name="alert_triangle" size={48} className="text-red-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Session Error</h3>
-        <p className="text-gray-600 dark:text-gray-400">Failed to start workout session</p>
-      </div>
-    );
-  }
-
-  const currentExercise = getCurrentExercise();
-  const currentExerciseDetail = getCurrentExerciseDetail();
-  const currentSet = currentExercise?.sets[currentSetIndex];
-  const isWorkoutComplete = session.exercises.every(ex => ex.completed);
-
-  if (isWorkoutComplete) {
-    return (
-      <div className={cn('text-center py-12', className)}>
-        <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Icon name="check" size={48} className="text-green-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Workout Complete!</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Great job! You've completed your workout session.
-        </p>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 max-w-md mx-auto">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600">
-                {Math.round((new Date().getTime() - startTime.getTime()) / 60000)}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Minutes</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {session.exercises.length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Exercises</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isResting) {
-    return (
-      <div className={cn('text-center py-12', className)}>
-        <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Icon name="clock" size={48} className="text-blue-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Rest Time</h2>
-        <div className="text-4xl font-bold text-blue-600 mb-4">
-          {formatTime(restTimeLeft)}
-        </div>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Take a break and prepare for your next set
-        </p>
-        <button
-          onClick={skipRest}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Skip Rest
-        </button>
-      </div>
+      <WorkoutTimer
+        workoutName={plan.name}
+        exercises={plan.exercises}
+        onComplete={handleTimerComplete}
+        onClose={handleTimerClose}
+      />
     );
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
-      {/* Progress Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Workout Session</h2>
-          <div className="text-right">
-            <div className="text-sm text-gray-600 dark:text-gray-400">Progress</div>
-            <div className="text-lg font-bold text-blue-600">{getProgressPercentage()}%</div>
-          </div>
-        </div>
-        
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
-          <div 
-            className="bg-blue-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${getProgressPercentage()}%` }}
-          />
-        </div>
-        
-        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-          <span>Exercise {currentExerciseIndex + 1} of {session.exercises.length}</span>
-          <span>Set {currentSetIndex + 1} of {currentExercise?.sets.length || 0}</span>
-        </div>
-      </div>
-
-      {/* Current Exercise */}
-      {currentExerciseDetail && currentExercise && currentSet && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {currentExerciseDetail.name}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 capitalize">
-              {currentExerciseDetail.muscleGroups.join(', ')}
-            </p>
-          </div>
-
-          {/* Exercise Instructions */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Instructions</h4>
-            <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              {currentExerciseDetail.instructions.map((instruction, index) => (
-                <li key={index}>{index + 1}. {instruction}</li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Set Information */}
-          <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Set {currentSetIndex + 1}
-            </div>
-            <div className="text-lg text-gray-600 dark:text-gray-400">
-              {currentSet.reps ? `${currentSet.reps} reps` : 
-               currentSet.duration ? `${Math.floor(currentSet.duration / 60)}:${(currentSet.duration % 60).toString().padStart(2, '0')}` : 
-               'Complete the exercise'}
-            </div>
-          </div>
-
-          {/* Complete Set Button */}
-          <div className="text-center">
-            <button
-              onClick={() => completeSet(currentSet.weight, currentSet.reps, currentSet.duration)}
-              className="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg font-medium"
-            >
-              Complete Set
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Exercise List */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <h4 className="font-medium text-gray-900 dark:text-white mb-4">Today's Exercises</h4>
-        <div className="space-y-3">
-          {session.exercises.map((exercise, index) => {
-            const exerciseDetail = exercises[exercise.exerciseId];
-            const isActive = index === currentExerciseIndex;
-            const isComplete = exercise.completed;
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
+          >
+            <Icon name="x" size={24} />
+          </button>
+          
+          <div className="pr-12">
+            <h1 className="text-2xl font-bold mb-2">{plan.name}</h1>
+            <p className="text-purple-100 mb-4">{plan.description}</p>
             
-            return (
-              <div
-                key={index}
-                className={cn(
-                  'flex items-center justify-between p-3 rounded-lg',
-                  isActive && 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800',
-                  isComplete && 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800',
-                  !isActive && !isComplete && 'bg-gray-50 dark:bg-gray-700/50'
-                )}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center',
-                    isComplete && 'bg-green-600',
-                    isActive && !isComplete && 'bg-blue-600',
-                    !isActive && !isComplete && 'bg-gray-400'
-                  )}>
-                    {isComplete ? (
-                      <Icon name="check" size={16} className="text-white" />
-                    ) : (
-                      <span className="text-white text-sm font-medium">{index + 1}</span>
-                    )}
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1">
+                <Icon name="clock" size={16} />
+                <span>{Math.ceil(totalDuration / 60)} minutes</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Icon name="activity" size={16} />
+                <span>{plan.exercises.length} exercises</span>
+              </div>
+              <div className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(plan.difficulty)}`}>
+                {plan.difficulty.charAt(0).toUpperCase() + plan.difficulty.slice(1)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Exercise List */}
+        <div className="p-6 overflow-y-auto max-h-96">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Exercise Breakdown</h3>
+          
+          <div className="space-y-4">
+            {plan.exercises.map((exercise, index) => (
+              <div key={index} className="border border-gray-200 rounded-2xl p-4 hover:border-purple-300 transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{exercise.name}</h4>
+                      <div className="text-sm text-gray-500">
+                        {Math.floor(exercise.duration / 60)}:{(exercise.duration % 60).toString().padStart(2, '0')}
+                        {exercise.rest && ` + ${exercise.rest}s rest`}
+                      </div>
+                    </div>
                   </div>
-                  <span className={cn(
-                    'font-medium',
-                    isComplete && 'text-green-700 dark:text-green-300',
-                    isActive && !isComplete && 'text-blue-700 dark:text-blue-300',
-                    !isActive && !isComplete && 'text-gray-700 dark:text-gray-300'
-                  )}>
-                    {exerciseDetail?.name || 'Unknown Exercise'}
-                  </span>
                 </div>
                 
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {exercise.sets.filter(set => set.completed).length} / {exercise.sets.length} sets
+                {exercise.description && (
+                  <p className="text-sm text-gray-600 mb-2 ml-11">{exercise.description}</p>
+                )}
+                
+                {exercise.tips && exercise.tips.length > 0 && (
+                  <div className="ml-11">
+                    <div className="text-xs text-gray-500 mb-1">Tips:</div>
+                    <ul className="text-xs text-gray-600 space-y-1">
+                      {exercise.tips.map((tip, tipIndex) => (
+                        <li key={tipIndex} className="flex items-start space-x-1">
+                          <span className="text-purple-400 mt-0.5">•</span>
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-6 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <span>Exercise</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span>Rest</span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+            
+            <button
+              onClick={handleStartWorkout}
+              className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-medium transition-colors shadow-lg hover:shadow-xl"
+            >
+              <Icon name="play" size={20} />
+              <span>Start Workout</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default WorkoutSessionComponent;

@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
-// Firebase configuration for fitness-app-bupe-staging
+// Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAGhmmERHqlE_6f2jFAALXiQFrtpy5fims",
-  authDomain: "fitness-app-bupe-staging.firebaseapp.com",
-  projectId: "fitness-app-bupe-staging",
-  storageBucket: "fitness-app-bupe-staging.firebasestorage.app",
-  messagingSenderId: "717122355693",
-  appId: "1:717122355693:web:7b224927c57a2cc10b67e4"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
@@ -21,23 +21,30 @@ export const auth = getAuth(app);
 // Initialize Firestore
 export const db = getFirestore(app);
 
-// Development mode configuration
+// Emulator configuration based on environment variables
+const useEmulators = import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true';
 const isDevelopment = import.meta.env.DEV;
 
-if (isDevelopment) {
-  // Connect to emulators in development
+if (isDevelopment && useEmulators) {
+  // Connect to emulators only if explicitly enabled
   try {
+    const emulatorHost = import.meta.env.VITE_FIREBASE_EMULATOR_HOST || 'localhost';
+    const authPort = import.meta.env.VITE_AUTH_EMULATOR_PORT || '9099';
+    const firestorePort = import.meta.env.VITE_FIRESTORE_EMULATOR_PORT || '8080';
+
     // Only connect if not already connected
     if (!auth.config.emulator) {
-      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      connectAuthEmulator(auth, `http://${emulatorHost}:${authPort}`, { disableWarnings: true });
     }
     if (!db._delegate._databaseId.projectId.includes('demo-')) {
-      connectFirestoreEmulator(db, 'localhost', 8080);
+      connectFirestoreEmulator(db, emulatorHost, parseInt(firestorePort));
     }
     console.log('🔧 Connected to Firebase emulators for development');
   } catch (error) {
     console.log('⚠️ Firebase emulators not available, using production services');
   }
+} else {
+  console.log('🔥 Using production Firebase services');
 }
 
 // Enhanced error handling for auth domain issues

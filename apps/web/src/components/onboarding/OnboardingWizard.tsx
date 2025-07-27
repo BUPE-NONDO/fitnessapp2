@@ -15,7 +15,6 @@ import { BodyMetricsStep } from './steps/BodyMetricsStep';
 import { PreferencesStep } from './steps/PreferencesStep';
 import { ProgressPreviewStep } from './steps/ProgressPreviewStep';
 import { PlanSummaryStep } from './steps/PlanSummaryStep';
-import { CompletionStep } from './steps/CompletionStep';
 
 export interface OnboardingData {
   // Step 2: Age Selection
@@ -80,18 +79,17 @@ export interface OnboardingData {
   totalSteps: number;
 }
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 8;
 
 const STEP_COMPONENTS = [
-  WelcomeStep,           // Step 1
-  AgeSelectionStep,      // Step 2
-  GenderBodyTypeStep,    // Step 3
-  FitnessGoalStep,       // Step 4
-  BodyMetricsStep,       // Step 5
-  PreferencesStep,       // Step 6
-  ProgressPreviewStep,   // Step 7
-  PlanSummaryStep,       // Step 8
-  CompletionStep,        // Step 9 (Free plan completion)
+  WelcomeStep,           // Step 0
+  AgeSelectionStep,      // Step 1
+  GenderBodyTypeStep,    // Step 2
+  FitnessGoalStep,       // Step 3
+  BodyMetricsStep,       // Step 4
+  PreferencesStep,       // Step 5
+  ProgressPreviewStep,   // Step 6
+  PlanSummaryStep,       // Step 7 (Final step - Building Plan)
 ];
 
 interface OnboardingWizardProps {
@@ -124,27 +122,21 @@ export function OnboardingWizard({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  // Auto-save COMPLETELY DISABLED to prevent infinite loops during completion
-  // TODO: Re-enable with better logic after fixing completion flow
+  // Auto-save disabled during completion to prevent conflicts
   useEffect(() => {
-    console.log(`🚫 Auto-save COMPLETELY DISABLED to prevent infinite loops`);
-    console.log(`Current step: ${currentStep}, isLoading: ${isLoading}, isCompleting: ${isCompleting}`);
+    console.log(`📝 Onboarding step: ${currentStep}, isLoading: ${isLoading}, isCompleting: ${isCompleting}`);
 
-    // Completely disable auto-save for now
-    return () => {
-      // No interval to clear
-    };
+    // Auto-save is handled by localStorage in useOnboardingFlow
+    // No additional auto-save needed here to prevent conflicts
   }, [currentStep, isLoading, isCompleting]);
 
   const handleNext = async () => {
     if (!canGoNext || isTransitioning) return;
 
     setIsTransitioning(true);
-    
+
     try {
-      await nextStep();
-      
-      // If we've completed all steps, call onComplete
+      // If we're at the last step (step 8 - PlanSummaryStep), complete onboarding
       if (currentStep >= TOTAL_STEPS - 1) {
         console.log('🎉 Starting onboarding completion process...');
         setIsCompleting(true);
@@ -153,6 +145,9 @@ export function OnboardingWizard({
         } finally {
           setIsCompleting(false);
         }
+      } else {
+        // Otherwise, go to next step
+        await nextStep();
       }
     } catch (error) {
       console.error('Error proceeding to next step:', error);
@@ -174,10 +169,11 @@ export function OnboardingWizard({
   const handleStepUpdate = async (stepData: Partial<OnboardingData>) => {
     updateData(stepData);
 
-    // DISABLED: Save progress to isolated service to prevent infinite loops
-    // TODO: Re-enable with better logic after fixing completion flow
-    console.log(`🚫 Step progress save DISABLED for step ${currentStep} to prevent infinite loops`);
+    // Progress is automatically saved to localStorage by useOnboardingFlow
+    console.log(`📝 Step ${currentStep} data updated:`, Object.keys(stepData));
 
+    // Optional: Save to Firebase for persistence across devices
+    // This is disabled to prevent conflicts during development
     // if (user && currentStep > 0) {
     //   try {
     //     await IsolatedOnboardingService.updateOnboardingProgress(user.uid, currentStep, { ...data, ...stepData });
@@ -206,26 +202,43 @@ export function OnboardingWizard({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-primary-100 dark:from-gray-900 dark:to-purple-900/20 relative overflow-hidden">
-      {/* Circle decorations */}
-      <div className="absolute top-10 right-10 w-32 h-32 bg-purple-200/30 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 left-10 w-48 h-48 bg-primary-300/20 rounded-full blur-2xl"></div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-100/10 to-primary-200/10 rounded-full blur-3xl"></div>
-      {/* Header with Progress */}
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 relative overflow-hidden">
+      {/* Futuristic 3D Background Elements */}
+      <div className="absolute inset-0 perspective-1000">
+        {/* Floating 3D Elements */}
+        <div className="absolute top-20 left-20 w-12 h-12 bg-gradient-to-br from-cyan-400/25 to-violet-500/25 transform rotate-45 rotateX-12 rotateY-12 animate-float shadow-xl backdrop-blur-sm border border-cyan-400/40"></div>
+        <div className="absolute top-40 right-32 w-8 h-8 bg-gradient-to-br from-fuchsia-400/25 to-pink-500/25 transform rotate-12 rotateX-45 rotateY-45 animate-float-delayed shadow-xl backdrop-blur-sm border border-fuchsia-400/40"></div>
+        <div className="absolute bottom-32 left-32 w-16 h-16 bg-gradient-to-br from-emerald-400/25 to-cyan-500/25 transform -rotate-12 rotateX-24 rotateY-24 animate-float-slow shadow-xl backdrop-blur-sm border border-emerald-400/40"></div>
+
+        {/* 3D Geometric Shapes */}
+        <div className="absolute top-1/3 right-20 w-20 h-20 bg-gradient-to-br from-violet-400/20 to-indigo-500/20 transform rotateX-45 rotateY-45 animate-spin-slow shadow-xl backdrop-blur-sm border border-violet-400/40 clip-path-hexagon"></div>
+        <div className="absolute bottom-1/3 left-20 w-14 h-14 bg-gradient-to-br from-cyan-400/20 to-teal-500/20 transform rotateX-30 rotateY-60 animate-pulse-glow shadow-xl backdrop-blur-sm border border-cyan-400/40"></div>
+
+        {/* Floating Particles */}
+        <div className="absolute top-1/4 left-1/4 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-float-particle shadow-lg"></div>
+        <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-violet-400 rounded-full animate-float-particle-delayed shadow-lg"></div>
+        <div className="absolute top-1/2 left-3/4 w-2 h-2 bg-fuchsia-400 rounded-full animate-float-particle-slow shadow-lg"></div>
+      </div>
+
+      {/* Enhanced Ambient Lighting */}
+      <div className="absolute top-10 right-10 w-32 h-32 bg-cyan-400/15 rounded-full blur-xl animate-pulse-glow"></div>
+      <div className="absolute bottom-20 left-10 w-48 h-48 bg-violet-400/10 rounded-full blur-2xl animate-pulse-glow-delayed"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-400/8 to-violet-400/12 rounded-full blur-3xl animate-pulse-glow-slow"></div>
+      {/* Compact Header with Progress */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-4xl mx-auto px-3 py-2 sm:px-4 sm:py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleExit}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                className="text-white/70 hover:text-white transition-colors"
                 aria-label="Exit onboarding"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h1 className="text-base sm:text-lg font-semibold text-white">
                 Build Your Perfect Body
               </h1>
             </div>
@@ -241,9 +254,7 @@ export function OnboardingWizard({
                 'Metrics',
                 'Preferences',
                 'Preview',
-                'Summary',
-                'Plan',
-                'Complete'
+                'Building Plan'
               ]}
               className="hidden sm:block"
             />
@@ -259,8 +270,8 @@ export function OnboardingWizard({
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Compact Main Content */}
+      <div className="max-w-4xl mx-auto px-3 py-4 sm:px-4 sm:py-6">
         <div className={`
           transition-all duration-300 ease-in-out
           ${isTransitioning ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}
@@ -277,17 +288,17 @@ export function OnboardingWizard({
         </div>
       </div>
 
-      {/* Footer Navigation */}
-      {currentStep > 0 && currentStep < TOTAL_STEPS - 1 && (
-        <div className="sticky bottom-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
-          <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* Compact Footer Navigation */}
+      {currentStep > 0 && currentStep <= TOTAL_STEPS - 1 && (
+        <div className="sticky bottom-0 bg-white/90 backdrop-blur-sm border-t border-gray-200/50 shadow-lg">
+          <div className="max-w-4xl mx-auto px-3 py-2 sm:px-4 sm:py-3">
             <StepNavigation
               canGoBack={canGoBack}
               canGoNext={canGoNext}
-              isLoading={isTransitioning}
+              isLoading={isTransitioning || isCompleting}
               onBack={handleBack}
               onNext={handleNext}
-              nextLabel={currentStep === TOTAL_STEPS - 2 ? 'Complete' : 'Continue'}
+              nextLabel={currentStep === TOTAL_STEPS - 1 ? 'Complete Onboarding' : 'Continue'}
             />
           </div>
         </div>

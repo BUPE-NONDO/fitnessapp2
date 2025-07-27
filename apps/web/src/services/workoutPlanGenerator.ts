@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { OnboardingData } from '@/components/onboarding/OnboardingWizard';
 
 // Types for workout plan structure
@@ -56,7 +56,6 @@ export interface WorkoutPlan {
 
 export class WorkoutPlanGenerator {
   private static readonly COLLECTION_NAME = 'workout_plans';
-  private static readonly EXERCISES_COLLECTION = 'exercises';
 
   /**
    * Generate a comprehensive workout plan based on onboarding data
@@ -111,7 +110,7 @@ export class WorkoutPlanGenerator {
       fitnessLevel,
       availableTime,
       exercises,
-      data.equipmentAccess || []
+      Array.isArray(data.equipmentAccess) ? data.equipmentAccess : []
     );
 
     // Calculate total calories
@@ -337,9 +336,9 @@ export class WorkoutPlanGenerator {
   private static selectExercisesForWorkout(
     exercises: Exercise[],
     workoutType: string,
-    fitnessLevel: string,
+    _fitnessLevel: string,
     availableTime: number,
-    equipment: string[]
+    _equipment: string[]
   ): Exercise[] {
     // Filter exercises by type and equipment
     const filteredExercises = exercises.filter(exercise => 
@@ -351,7 +350,7 @@ export class WorkoutPlanGenerator {
     return filteredExercises.slice(0, Math.max(3, exerciseCount));
   }
 
-  private static getWarmUpExercises(fitnessLevel: string): Exercise[] {
+  private static getWarmUpExercises(_fitnessLevel: string): Exercise[] {
     return [
       {
         id: 'warmup_march',
@@ -397,7 +396,7 @@ export class WorkoutPlanGenerator {
   /**
    * Update workout plan progress
    */
-  static async updateProgress(userId: string, planId: string, completedWorkout: boolean): Promise<void> {
+  static async updateProgress(_userId: string, planId: string, completedWorkout: boolean): Promise<void> {
     try {
       const planRef = doc(db, this.COLLECTION_NAME, planId);
       const planDoc = await getDoc(planRef);
@@ -429,12 +428,12 @@ export class WorkoutPlanGenerator {
   /**
    * Get user's active workout plan
    */
-  static async getUserWorkoutPlan(userId: string): Promise<WorkoutPlan | null> {
+  static async getUserWorkoutPlan(_userId: string): Promise<WorkoutPlan | null> {
     try {
       // First check user's subcollection for active plan
-      const userPlansRef = collection(db, 'users', userId, 'workout_plans');
+      // const userPlansRef = collection(db, 'users', userId, 'workout_plans');
       // For now, we'll implement a simple query - in production you'd query for active plans
-      
+
       // This is a simplified version - you'd typically query for the most recent active plan
       return null; // Placeholder - implement based on your needs
     } catch (error) {

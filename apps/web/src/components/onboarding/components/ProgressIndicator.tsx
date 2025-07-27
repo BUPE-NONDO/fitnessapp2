@@ -21,10 +21,10 @@ export function ProgressIndicator({
     return (
       <div className={cn('w-full', className)}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-gray-800">
             Step {currentStep} of {totalSteps}
           </span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-700">
             {Math.round(progressPercentage)}%
           </span>
         </div>
@@ -54,7 +54,7 @@ export function ProgressIndicator({
                 {
                   'bg-blue-600 text-white': isActive,
                   'bg-green-500 text-white': isCompleted,
-                  'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400': !isActive && !isCompleted,
+                  'bg-gray-200 text-gray-700': !isActive && !isCompleted,
                 }
               )}
             >
@@ -76,7 +76,7 @@ export function ProgressIndicator({
   return (
     <div className={cn('flex items-center space-x-2', className)}>
       {showLabels && (
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-3">
+        <span className="text-sm font-medium text-gray-800 mr-3">
           {currentStep} / {totalSteps}
         </span>
       )}
@@ -102,7 +102,7 @@ export function ProgressIndicator({
       })}
       
       {showLabels && (
-        <span className="text-sm text-gray-500 dark:text-gray-400 ml-3">
+        <span className="text-sm text-gray-700 ml-3">
           {Math.round(progressPercentage)}% complete
         </span>
       )}

@@ -56,10 +56,10 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-3xl font-bold text-black mb-2">
             Tell us about yourself
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-black">
             This helps us create a personalized fitness plan just for you
           </p>
         </div>
@@ -67,7 +67,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
         <div className="space-y-6">
           {/* Name Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Full Name
             </label>
             <input
@@ -75,8 +75,8 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
               value={data.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
               className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
+                errors.name ? 'border-red-500' : 'border-gray-300'
+              } bg-white text-black`}
               placeholder="Enter your full name"
             />
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -84,15 +84,15 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
 
           {/* Age Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Age
             </label>
             <select
               value={data.age || ''}
               onChange={(e) => handleInputChange('age', parseInt(e.target.value))}
               className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                errors.age ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-              } bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
+                errors.age ? 'border-red-500' : 'border-gray-300'
+              } bg-white text-black`}
             >
               <option value="">Select your age</option>
               {ageOptions.map(age => (
@@ -104,7 +104,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
 
           {/* Gender Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Gender
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -118,14 +118,14 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
                   key={option.value}
                   type="button"
                   onClick={() => handleInputChange('gender', option.value)}
-                  className={`p-4 rounded-2xl border-2 transition-all duration-200 ${
+                  className={`p-4 rounded-2xl border-2 transition-all duration-200 bg-white ${
                     data.gender === option.value
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
                   }`}
                 >
                   <div className="text-2xl mb-1">{option.icon}</div>
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">{option.label}</div>
+                  <div className="text-sm font-medium text-black">{option.label}</div>
                 </button>
               ))}
             </div>
@@ -135,7 +135,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
           {/* Weight Input */}
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Weight
               </label>
               <input
@@ -143,20 +143,20 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
                 value={data.weight || ''}
                 onChange={(e) => handleInputChange('weight', parseFloat(e.target.value))}
                 className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                  errors.weight ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                } bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
+                  errors.weight ? 'border-red-500' : 'border-gray-300'
+                } bg-white text-black`}
                 placeholder="Enter weight"
               />
               {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Unit
               </label>
               <select
                 value={data.weightUnit || 'kg'}
                 onChange={(e) => handleInputChange('weightUnit', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white text-black"
               >
                 <option value="kg">kg</option>
                 <option value="lbs">lbs</option>
@@ -167,7 +167,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
           {/* Height Input */}
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Height
               </label>
               <input
@@ -175,20 +175,20 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
                 value={data.height || ''}
                 onChange={(e) => handleInputChange('height', parseFloat(e.target.value))}
                 className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
-                  errors.height ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                } bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
+                  errors.height ? 'border-red-500' : 'border-gray-300'
+                } bg-white text-black`}
                 placeholder={data.heightUnit === 'cm' ? 'Enter height in cm' : 'Enter height in inches'}
               />
               {errors.height && <p className="text-red-500 text-sm mt-1">{errors.height}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-black mb-2">
                 Unit
               </label>
               <select
                 value={data.heightUnit || 'cm'}
                 onChange={(e) => handleInputChange('heightUnit', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white text-black"
               >
                 <option value="cm">cm</option>
                 <option value="ft-in">ft/in</option>
@@ -201,7 +201,7 @@ export function PersonalInfoStep({ data, onUpdate, onNext, onBack }: PersonalInf
         <div className="flex justify-between mt-8">
           <button
             onClick={onBack}
-            className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200"
+            className="px-6 py-3 text-black hover:text-gray-800 transition-colors duration-200"
           >
             ← Back
           </button>

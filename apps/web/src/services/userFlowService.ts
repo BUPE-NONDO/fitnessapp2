@@ -1,9 +1,8 @@
 import { db } from '@/lib/firebase';
-import { 
-  collection, 
-  doc, 
+import {
+  doc,
   getDoc,
-  setDoc, 
+  setDoc,
   serverTimestamp,
   writeBatch
 } from 'firebase/firestore';

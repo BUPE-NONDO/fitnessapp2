@@ -42,7 +42,7 @@ export function SplashScreen({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 flex items-center justify-center">
       <div className="text-center text-white">
         {/* Logo Animation */}
         <div className={`transition-all duration-1000 ${

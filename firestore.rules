@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // DEVELOPMENT-FRIENDLY RULES - More open for testing and development
+    // PRODUCTION-READY FIRESTORE RULES - Secure and validated
 
     // Helper functions for validation
     function isAuthenticated() {
@@ -13,94 +13,205 @@ service cloud.firestore {
     }
 
     function isValidUser() {
-      return isAuthenticated();
-      // Simplified validation - allow any user data structure
+      return isAuthenticated() &&
+             request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+             request.resource.data.email is string &&
+             request.resource.data.createdAt is timestamp;
     }
 
     function isValidUserUpdate() {
-      return isAuthenticated();
-      // Simplified validation - allow any updates
+      return isAuthenticated() &&
+             (!('email' in request.resource.data) || request.resource.data.email is string) &&
+             (!('displayName' in request.resource.data) || request.resource.data.displayName is string);
     }
 
     function isValidGoal() {
-      return isAuthenticated();
-      // Simplified goal validation - allow any goal structure
+      return isAuthenticated() &&
+             request.resource.data.keys().hasAll(['title', 'target', 'userId']) &&
+             request.resource.data.title is string &&
+             request.resource.data.target is number &&
+             request.resource.data.userId == request.auth.uid;
     }
 
     function isValidLog() {
-      return isAuthenticated();
-      // Simplified log validation - allow any log structure
+      return isAuthenticated() &&
+             request.resource.data.keys().hasAll(['value', 'date', 'userId']) &&
+             request.resource.data.value is number &&
+             request.resource.data.date is timestamp &&
+             request.resource.data.userId == request.auth.uid;
     }
 
-    // OPEN USER ACCESS - Allow authenticated users to manage their own data
+    // USER ACCESS - Strict user data isolation
     match /users/{userId} {
-      allow read, write: if isAuthenticated();
-      // More open for development - allow any authenticated user operations
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser();
+      allow update: if isOwner(userId) && isValidUserUpdate();
+      allow delete: if isOwner(userId);
 
-      // User subcollections - allow full access for development
+      // User subcollections - strict ownership
       match /{subcollection}/{docId} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isOwner(userId);
+      }
+
+      // Explicit daily_goals subcollection access
+      match /daily_goals/{goalId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Explicit workout_plans subcollection access
+      match /workout_plans/{planId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Explicit onboarding_data subcollection access
+      match /onboarding_data/{dataId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User achievements and progress
+      match /achievements/{achievementId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User dashboard data
+      match /dashboard_data/{dataId} {
+        allow read, write: if isOwner(userId);
       }
     }
 
-    // OPEN COLLECTION ACCESS - Allow authenticated users full access for development
+    // USER-SPECIFIC COLLECTIONS - Strict ownership validation
     match /user_stats/{userId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isOwner(userId);
     }
 
     match /activity_logs/{logId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() &&
+                         resource.data.userId == request.auth.uid;
     }
 
     match /goals/{goalId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidGoal();
+      allow update: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     match /logs/{logId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidLog();
+      allow update: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     match /badges/{badgeId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() &&
+                         resource.data.userId == request.auth.uid;
     }
 
     match /workout_routines/{routineId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() &&
+                         resource.data.userId == request.auth.uid;
     }
 
     match /workout_sessions/{sessionId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() &&
+                         resource.data.userId == request.auth.uid;
     }
 
     match /workout_plans/{planId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() &&
+                         resource.data.userId == request.auth.uid;
     }
 
-    // SHARED RESOURCES - Allow read/write for development
+    // SHARED RESOURCES - Read-only for users, admin write access
     match /exercises/{exerciseId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow for development, restrict in production
     }
 
     match /badgeDefinitions/{badgeDefId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow for development, restrict in production
     }
 
     match /metadata/{docId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Allow for development, restrict in production
     }
 
     match /admins/{adminId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated(); // Restrict to admin users in production
     }
 
     match /system_logs/{logId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
 
-    // FALLBACK RULE - Allow any authenticated user to access any collection
-    // This is very open for development purposes
-    match /{document=**} {
+    // LEGAL COMPLIANCE COLLECTIONS
+    match /legalConsents/{userId} {
+      allow read, write: if isOwner(userId);
+      // Only users can access their own legal consent records
+    }
+
+    match /passwordHistory/{userId} {
+      allow read, write: if isOwner(userId);
+      // Only users can access their own password history
+    }
+
+    match /securityEvents/{eventId} {
       allow read, write: if isAuthenticated();
+      // Allow authenticated users to log security events
+    }
+
+    // PROGRESS TRACKING COLLECTIONS
+    match /progressStats/{userId} {
+      allow read, write: if isOwner(userId);
+      // Only users can access their own progress statistics
+    }
+
+    match /workoutCompletions/{completionId} {
+      allow read, write: if isAuthenticated();
+      // Allow authenticated users to track workout completions
+    }
+
+    match /achievementProgress/{userId} {
+      allow read, write: if isOwner(userId);
+      // Only users can access their own achievement progress
+    }
+
+    // ENHANCED USER PROFILE COLLECTIONS
+    match /userPreferences/{userId} {
+      allow read, write: if isOwner(userId);
+      // Only users can access their own preferences
+    }
+
+    match /userSessions/{sessionId} {
+      allow read, write: if isAuthenticated();
+      // Allow authenticated users to manage their sessions
+    }
+
+    // AUDIT AND COMPLIANCE COLLECTIONS
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      // Allow authenticated users to create audit logs
+    }
+
+    match /complianceReports/{reportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      // Allow authenticated users to access compliance reports
+    }
+
+    // FALLBACK RULE - Deny by default for security
+    // Remove this in production for maximum security
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

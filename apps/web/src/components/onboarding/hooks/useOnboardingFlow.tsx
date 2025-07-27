@@ -169,8 +169,7 @@ export function useOnboardingFlow(initialData?: Partial<OnboardingData>) {
     const plan = createPersonalizedPlan(data);
     
     updateData({
-      generatedPlan: plan,
-      workoutPlan: plan, // Also store for compatibility
+      generatedPlan: plan
     });
   };
 
@@ -191,66 +190,83 @@ export function useOnboardingFlow(initialData?: Partial<OnboardingData>) {
 
 // Helper function to create personalized plan
 function createPersonalizedPlan(data: OnboardingData) {
-  const { primaryGoal, currentWeight, targetWeight, fitnessLevel, workoutDaysPerWeek, availableTime } = data;
-  
-  // Calculate projected results based on goal and user data
-  let weightChange = 0;
-  let timeframe = 4; // weeks
-  
-  if (primaryGoal === 'lose-weight' && currentWeight && targetWeight) {
-    weightChange = targetWeight - currentWeight;
-    // Safe weight loss: 0.5-1kg per week
-    timeframe = Math.max(4, Math.abs(weightChange) / 0.75);
-  } else if (primaryGoal === 'gain-muscle') {
-    weightChange = 2; // 2kg muscle gain in 4 weeks (optimistic)
-    timeframe = 4;
-  }
+  const goal = data.primaryGoal || 'general-fitness';
+  const fitnessLevel = data.fitnessLevel || 'beginner';
+  const workoutDays = data.workoutDaysPerWeek || 3;
 
-  // Create weekly schedule based on preferences
-  const workoutTypes = getWorkoutTypes(primaryGoal, fitnessLevel);
-  const weeklySchedule = createWeeklySchedule(workoutDaysPerWeek || 4, workoutTypes, availableTime || 30);
+  // Plan templates based on goals
+  const planTemplates = {
+    'lose-weight': {
+      title: 'Fat Burning Transformation',
+      description: 'High-intensity workouts designed to maximize calorie burn and boost metabolism',
+      exercises: [
+        { name: 'Burpees', sets: '3', reps: '10-15', muscle: 'Full Body' },
+        { name: 'Mountain Climbers', sets: '3', reps: '20', muscle: 'Core/Cardio' },
+        { name: 'Jump Squats', sets: '3', reps: '15', muscle: 'Legs' },
+        { name: 'Push-ups', sets: '3', reps: '8-12', muscle: 'Chest/Arms' },
+        { name: 'Plank', sets: '3', reps: '30-60 sec', muscle: 'Core' },
+        { name: 'High Knees', sets: '3', reps: '30 sec', muscle: 'Cardio' }
+      ]
+    },
+    'gain-muscle': {
+      title: 'Muscle Building Program',
+      description: 'Progressive strength training to build lean muscle mass and increase strength',
+      exercises: [
+        { name: 'Squats', sets: '4', reps: '8-12', muscle: 'Legs' },
+        { name: 'Push-ups/Bench Press', sets: '4', reps: '8-12', muscle: 'Chest' },
+        { name: 'Deadlifts', sets: '4', reps: '6-10', muscle: 'Back/Legs' },
+        { name: 'Pull-ups/Rows', sets: '3', reps: '6-10', muscle: 'Back' },
+        { name: 'Overhead Press', sets: '3', reps: '8-12', muscle: 'Shoulders' },
+        { name: 'Dips', sets: '3', reps: '8-15', muscle: 'Triceps' }
+      ]
+    },
+    'tone-body': {
+      title: 'Body Toning & Sculpting',
+      description: 'Balanced workouts combining strength and cardio for a lean, toned physique',
+      exercises: [
+        { name: 'Bodyweight Squats', sets: '3', reps: '15-20', muscle: 'Legs' },
+        { name: 'Push-ups', sets: '3', reps: '10-15', muscle: 'Chest/Arms' },
+        { name: 'Lunges', sets: '3', reps: '12 each leg', muscle: 'Legs' },
+        { name: 'Tricep Dips', sets: '3', reps: '10-15', muscle: 'Arms' },
+        { name: 'Russian Twists', sets: '3', reps: '20', muscle: 'Core' },
+        { name: 'Glute Bridges', sets: '3', reps: '15-20', muscle: 'Glutes' }
+      ]
+    },
+    'increase-endurance': {
+      title: 'Endurance & Stamina Builder',
+      description: 'Cardiovascular and muscular endurance training for improved stamina',
+      exercises: [
+        { name: 'Jumping Jacks', sets: '4', reps: '30 sec', muscle: 'Cardio' },
+        { name: 'Burpees', sets: '3', reps: '8-12', muscle: 'Full Body' },
+        { name: 'Mountain Climbers', sets: '4', reps: '30 sec', muscle: 'Core/Cardio' },
+        { name: 'Step-ups', sets: '3', reps: '15 each leg', muscle: 'Legs' },
+        { name: 'Plank Hold', sets: '3', reps: '45-90 sec', muscle: 'Core' },
+        { name: 'Wall Sit', sets: '3', reps: '30-60 sec', muscle: 'Legs' }
+      ]
+    },
+    'general-fitness': {
+      title: 'Complete Fitness Program',
+      description: 'Well-rounded workouts for overall health, strength, and fitness',
+      exercises: [
+        { name: 'Squats', sets: '3', reps: '12-15', muscle: 'Legs' },
+        { name: 'Push-ups', sets: '3', reps: '8-12', muscle: 'Chest/Arms' },
+        { name: 'Plank', sets: '3', reps: '30-60 sec', muscle: 'Core' },
+        { name: 'Lunges', sets: '3', reps: '10 each leg', muscle: 'Legs' },
+        { name: 'Jumping Jacks', sets: '3', reps: '20', muscle: 'Cardio' },
+        { name: 'Glute Bridges', sets: '3', reps: '15', muscle: 'Glutes' }
+      ]
+    }
+  };
+
+  const selectedTemplate = planTemplates[goal as keyof typeof planTemplates] || planTemplates['general-fitness'];
 
   return {
-    planId: `plan_${Date.now()}`,
-    duration: Math.round(timeframe),
-    projectedResults: {
-      weightChange: Math.round(weightChange * 10) / 10,
-      timeframe: Math.round(timeframe),
-    },
-    weeklySchedule,
+    title: selectedTemplate.title,
+    description: selectedTemplate.description,
+    workoutsPerWeek: workoutDays,
+    duration: fitnessLevel === 'beginner' ? '4 weeks' : fitnessLevel === 'intermediate' ? '6 weeks' : '8 weeks',
+    exercises: selectedTemplate.exercises
   };
 }
 
-function getWorkoutTypes(goal?: string, level?: string) {
-  const baseTypes = ['Strength Training', 'Cardio', 'Flexibility'];
-  
-  switch (goal) {
-    case 'lose-weight':
-      return ['HIIT Cardio', 'Strength Training', 'Active Recovery'];
-    case 'gain-muscle':
-      return ['Strength Training', 'Hypertrophy', 'Recovery'];
-    case 'tone-body':
-      return ['Circuit Training', 'Strength Training', 'Cardio'];
-    case 'increase-endurance':
-      return ['Cardio', 'Interval Training', 'Recovery'];
-    default:
-      return baseTypes;
-  }
-}
 
-function createWeeklySchedule(daysPerWeek: number, workoutTypes: string[], duration: number) {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const schedule = [];
-
-  for (let i = 0; i < daysPerWeek; i++) {
-    const intensityOptions: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'low'];
-    schedule.push({
-      day: days[i],
-      workoutType: workoutTypes[i % workoutTypes.length],
-      duration,
-      intensity: intensityOptions[i % 3],
-    });
-  }
-
-  return schedule;
-}

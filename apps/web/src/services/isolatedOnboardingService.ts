@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { OnboardingData } from '@/components/onboarding/OnboardingWizard';
 import { WorkoutPlanGenerator } from './workoutPlanGenerator';
+import { DailyGoalService } from './dailyGoalService';
 
 export interface IsolatedOnboardingProgress {
   status: 'not_started' | 'in_progress' | 'completed';
@@ -127,6 +128,17 @@ export class IsolatedOnboardingService {
       console.log('🏋️ Generating workout plan...');
       const workoutPlan = await WorkoutPlanGenerator.generateWorkoutPlan(userId, finalData);
       console.log('✅ Workout plan generated:', workoutPlan.id, workoutPlan.title);
+
+      // Generate daily goals based on the workout plan
+      console.log('🎯 Generating daily goals...');
+      try {
+        await DailyGoalService.generateDailyGoals(userId, workoutPlan);
+        console.log('✅ Daily goals generated for 4 weeks');
+      } catch (goalError) {
+        console.error('❌ Error generating daily goals:', goalError);
+        // Continue with onboarding even if daily goals fail
+        console.log('⚠️ Continuing onboarding without daily goals...');
+      }
 
       // Now update onboarding status and references
       const batch = writeBatch(db);

@@ -13,6 +13,8 @@ import {
   UserCredential
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { LegalComplianceService } from './legalComplianceService';
+import { validatePassword } from '@/utils/passwordValidation';
 
 // Enhanced error handling for Firebase Auth
 export function getAuthErrorMessage(errorCode: string): string {
@@ -30,7 +32,7 @@ export function getAuthErrorMessage(errorCode: string): string {
     case 'auth/too-many-requests':
       return 'Too many failed attempts. Please try again later.';
     case 'auth/network-request-failed':
-      return 'Network error. Please check your connection.';
+      return 'Unable to connect to authentication servers. Please check your internet connection and try again.';
     case 'auth/invalid-credential':
       return 'Invalid credentials. Please check your email and password.';
     case 'auth/user-disabled':
@@ -80,13 +82,44 @@ export class AuthService {
       return result;
     } catch (error: any) {
       console.error('❌ Email sign-in error:', error);
+
+      // Add specific error handling for network issues
+      if (error.code === 'auth/network-request-failed') {
+        console.error('🌐 Network request failed - Please check your internet connection and try again.');
+        // Enhanced error message for network issues
+        throw new Error('Unable to connect to authentication servers. Please check your internet connection and try again.');
+      }
+
+      // Handle other specific auth errors
+      if (error.code === 'auth/too-many-requests') {
+        console.error('🚫 Too many failed attempts - Account temporarily locked.');
+        throw new Error('Too many failed sign-in attempts. Please wait a few minutes before trying again.');
+      }
+
       throw new Error(getAuthErrorMessage(error.code));
     }
   }
 
-  static async signUpWithEmail(email: string, password: string, displayName?: string): Promise<UserCredential> {
+  static async signUpWithEmail(
+    email: string,
+    password: string,
+    displayName?: string,
+    acceptedTerms: boolean = false
+  ): Promise<UserCredential> {
     try {
       console.log('🔐 Attempting email sign-up for:', email);
+
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        throw new Error(`Password requirements not met: ${passwordValidation.errors.join(', ')}`);
+      }
+
+      // Check terms acceptance
+      if (!acceptedTerms) {
+        throw new Error('You must accept the terms and conditions to create an account');
+      }
+
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
       // Update display name if provided
@@ -100,6 +133,18 @@ export class AuthService {
         }
       }
 
+      // Record legal consent
+      if (result.user) {
+        try {
+          const complianceMetadata = await LegalComplianceService.getComplianceMetadata();
+          await LegalComplianceService.recordFullConsent(result.user.uid, complianceMetadata);
+          console.log('✅ Legal consent recorded');
+        } catch (consentError) {
+          console.warn('⚠️ Failed to record legal consent:', consentError);
+          // Don't fail signup for this, but log it
+        }
+      }
+
       console.log('✅ Email sign-up successful for user:', result.user.uid);
       return result;
     } catch (error: any) {
@@ -110,6 +155,19 @@ export class AuthService {
         email: email,
         customData: error.customData
       });
+
+      // Add specific error handling for network issues
+      if (error.code === 'auth/network-request-failed') {
+        console.error('🌐 Network request failed during sign-up - Please check your internet connection and try again.');
+        throw new Error('Unable to connect to authentication servers. Please check your internet connection and try again.');
+      }
+
+      // Handle other specific auth errors
+      if (error.code === 'auth/too-many-requests') {
+        console.error('🚫 Too many failed attempts during sign-up - Account creation temporarily blocked.');
+        throw new Error('Too many failed attempts. Please wait a few minutes before trying again.');
+      }
+
       throw new Error(getAuthErrorMessage(error.code));
     }
   }
@@ -131,6 +189,13 @@ export class AuthService {
       return result;
     } catch (error: any) {
       console.error('❌ Google sign-in error:', error);
+
+      // Add specific error handling for network issues
+      if (error.code === 'auth/network-request-failed') {
+        console.error('🌐 Network request failed during Google sign-in - Please check your internet connection and try again.');
+        throw new Error('Unable to connect to Google authentication servers. Please check your internet connection and try again.');
+      }
+
       throw new Error(getGoogleAuthErrorMessage(error.code));
     }
   }
